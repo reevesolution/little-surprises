@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>100 Reasons Why I Love You</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .reason-card {
+      min-height: 180px;
+      background: linear-gradient(135deg, #FFF0F3, #FFE3E8);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .reason-number {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primary-hover);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .reason-text {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #05</div>
+      <h1 class="title">100 Reasons Why</h1>
+      <p class="subtitle">Tap below to generate a new reason why Justine is loved so much.</p>
+
+      <div class="reason-card" id="card">
+        <div class="reason-number" id="reason-num">Reason #1</div>
+        <div class="reason-text" id="reason-text">Your smile brightens up the entire room instantly.</div>
+      </div>
+
+      <button class="btn" onclick="nextReason()">Next Reason ✨</button>
+    </div>
+  </main>
+
+  <script>
+    const reasons = [
+      "Your laugh is my absolute favorite sound in the world.",
+      "How you always know how to make tea just the right temperature.",
+      "Your kindness and warmth towards everyone around you.",
+      "The way your eyes light up when talking about something you love.",
+      "How cozy every moment feels when we're together.",
+      "Your incredible sense of humor and quick wit.",
+      "The endless sweetness you bring into daily life.",
+      "How supportive and thoughtful you always are.",
+      "Your gentle heart and beautiful spirit.",
+      "Because every adventure with you is unforgettable!",
+      "How you make home feel like the best place on earth.",
+      "Your adorable enthusiasm for simple daily joys."
+    ];
+
+    let currentIndex = 0;
+
+    function nextReason() {
+      const card = document.getElementById('card');
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(10px)';
+
+      setTimeout(() => {
+        currentIndex = (currentIndex + 1) % reasons.length;
+        document.getElementById('reason-num').textContent = `Reason #${currentIndex + 1}`;
+        document.getElementById('reason-text').textContent = reasons[currentIndex];
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, 300);
+    }
+  </script>
+</body>
+</html>

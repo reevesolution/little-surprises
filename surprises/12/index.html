@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Romantic Couple's Quiz</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .quiz-option {
+      background: #F8FAFC;
+      border: 2px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin: 10px 0;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+    .quiz-option:active {
+      transform: scale(0.98);
+    }
+    .quiz-option.correct {
+      background: #DCFCE7;
+      border-color: #22C55E;
+      color: #15803D;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #12</div>
+      <h1 class="title">Couple's Quiz</h1>
+      <p class="subtitle" id="quiz-subtitle">Question 1 of 2</p>
+
+      <div id="quiz-box">
+        <h3 style="margin-bottom: 15px; color: var(--text-dark);" id="q-text">Who drinks tea and who drinks coffee?</h3>
+
+        <div class="quiz-option" onclick="checkAnswer(this, true)">
+          🍵 Justine = Tea | ☕ Kristian = Coffee
+        </div>
+        <div class="quiz-option" onclick="checkAnswer(this, false)">
+          ☕ Justine = Coffee | 🍵 Kristian = Tea
+        </div>
+      </div>
+
+      <div id="result-box" style="display: none; padding: 20px 0;">
+        <div style="font-size: 3rem;">🎉 🏆 🎉</div>
+        <h2 style="color: var(--primary-color); margin: 10px 0;">100% Match!</h2>
+        <p style="color: var(--text-dark); font-size: 1.05rem;">
+          You know each other perfectly! The ultimate dynamic duo!
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let step = 1;
+
+    function checkAnswer(el, isCorrect) {
+      if (isCorrect) {
+        el.classList.add('correct');
+        setTimeout(() => {
+          if (step === 1) {
+            step = 2;
+            document.getElementById('quiz-subtitle').textContent = 'Question 2 of 2';
+            document.getElementById('q-text').textContent = 'What is the absolute best part of any day?';
+            const options = document.querySelectorAll('.quiz-option');
+            options[0].textContent = '✨ Cozy quality time together!';
+            options[0].setAttribute('onclick', 'checkAnswer(this, true)');
+            options[1].textContent = '💼 Checking emails';
+            options[1].setAttribute('onclick', 'checkAnswer(this, false)');
+            options.forEach(o => o.classList.remove('correct'));
+          } else {
+            document.getElementById('quiz-box').style.display = 'none';
+            document.getElementById('quiz-subtitle').style.display = 'none';
+            document.getElementById('result-box').style.display = 'block';
+          }
+        }, 500);
+      } else {
+        alert("Oops! Try again! ❤️");
+      }
+    }
+  </script>
+</body>
+</html>

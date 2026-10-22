@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Steeped in Love</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .cups-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      margin: 30px 0;
+      height: 140px;
+    }
+    .cup-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cup-icon {
+      font-size: 3.5rem;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    .cup-box:active .cup-icon {
+      transform: scale(0.9);
+    }
+    .steam {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.2rem;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .brewing .steam {
+      animation: steamUp 2s infinite linear;
+    }
+    @keyframes steamUp {
+      0% { transform: translate(-50%, 0) scale(0.8); opacity: 0.2; }
+      50% { opacity: 0.8; }
+      100% { transform: translate(-50%, -25px) scale(1.3); opacity: 0; }
+    }
+    .label {
+      font-weight: 600;
+      margin-top: 8px;
+      font-size: 0.95rem;
+    }
+    .tea-label { color: var(--tea-color); }
+    .coffee-label { color: var(--coffee-color); }
+    .message-box {
+      min-height: 80px;
+      background: rgba(255, 249, 246, 0.8);
+      border: 1px solid rgba(232, 90, 113, 0.2);
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: var(--text-dark);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #03</div>
+      <h1 class="title">Steeped in Love</h1>
+      <p class="subtitle">Justine's warm tea & Kristian's rich coffee brewed together.</p>
+
+      <div class="cups-container">
+        <div class="cup-box" id="tea-cup" onclick="brew('tea')">
+          <div class="cup-icon">
+            <span class="steam">💨</span>🍵
+          </div>
+          <div class="label tea-label">Justine's Tea</div>
+        </div>
+        <div style="font-size: 1.5rem; color: var(--primary-color); padding-bottom: 25px;">+</div>
+        <div class="cup-box" id="coffee-cup" onclick="brew('coffee')">
+          <div class="cup-icon">
+            <span class="steam">💨</span>☕
+          </div>
+          <div class="label coffee-label">Kristian's Coffee</div>
+        </div>
+      </div>
+
+      <div class="message-box" id="message">
+        Tap Justine's tea or Kristian's coffee to start brewing our favorite cozy moment!
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const messages = {
+      tea: [
+        "Justine's tea is steeping to perfection — calm, warm, and sweet! 🍵✨",
+        "A soothing cup for Justine, filled with endless love and comfort.",
+        "Justine's tea time: taking a gentle pause together!"
+      ],
+      coffee: [
+        "Kristian's coffee is freshly brewed — bold, rich, and full of energy! ☕🔥",
+        "A strong cup of coffee for Kristian to power through the day with love.",
+        "Kristian's espresso shot: always brewed with love for Justine!"
+      ],
+      both: "Tea for Justine + Coffee for Kristian = The perfect blend for every morning! ❤️"
+    };
+
+    let brewed = { tea: false, coffee: false };
+
+    function brew(type) {
+      const el = document.getElementById(type + '-cup');
+      el.classList.add('brewing');
+      brewed[type] = true;
+
+      const msgEl = document.getElementById('message');
+      if (brewed.tea && brewed.coffee) {
+        msgEl.innerHTML = messages.both;
+      } else {
+        const list = messages[type];
+        msgEl.innerHTML = list[Math.floor(Math.random() * list.length)];
+      }
+    }
+  </script>
+</body>
+</html>

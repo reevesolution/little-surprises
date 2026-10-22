@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Flip Notebook of Memories</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .notebook-page {
+      background: #FFFDF9;
+      border: 1px solid #E2E8F0;
+      border-left: 6px solid #CBD5E1;
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 200px;
+      margin: 15px 0;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s ease;
+    }
+    .notebook-text {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #19</div>
+      <h1 class="title">Memory Flipbook</h1>
+      <p class="subtitle">Flip through sweet handwritten notes & cozy moment memories.</p>
+
+      <div class="notebook-page" id="page">
+        <div class="placeholder-box" style="width: 80%; padding: 10px; margin-bottom: 10px;">
+          📷 Photo Placeholder (Add favorite photos here)
+        </div>
+        <div class="notebook-text" id="page-text">
+          "Page 1: Every cozy tea time and coffee morning spent together feels like home."
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+        <button class="btn" style="padding: 10px 20px;" onclick="prevPage()">◀ Prev</button>
+        <span style="align-self: center; font-weight: 600;" id="page-num">1 / 3</span>
+        <button class="btn" style="padding: 10px 20px;" onclick="nextPage()">Next ▶</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const pages = [
+      "Page 1: Every cozy tea time and coffee morning spent together feels like home.",
+      "Page 2: Laughing at inside jokes and sharing quiet warm moments.",
+      "Page 3: Here's to infinitely more happy memories created side by side!"
+    ];
+    let curr = 0;
+
+    function update() {
+      document.getElementById('page-text').textContent = pages[curr];
+      document.getElementById('page-num').textContent = `${curr + 1} / ${pages.length}`;
+    }
+
+    function nextPage() {
+      curr = (curr + 1) % pages.length;
+      update();
+    }
+
+    function prevPage() {
+      curr = (curr - 1 + pages.length) % pages.length;
+      update();
+    }
+  </script>
+</body>
+</html>

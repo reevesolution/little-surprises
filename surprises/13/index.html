@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Bouquet Builder for Justine</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .flower-picker {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 15px 0;
+    }
+    .flower-btn {
+      font-size: 2rem;
+      background: #FFF;
+      border: 2px solid #E2E8F0;
+      border-radius: 50%;
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+    .flower-btn:active {
+      transform: scale(0.9);
+    }
+    .bouquet-display {
+      min-height: 120px;
+      background: #FFF0F3;
+      border-radius: 16px;
+      padding: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 2.2rem;
+      border: 2px dashed var(--primary-color);
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #13</div>
+      <h1 class="title">Virtual Bouquet</h1>
+      <p class="subtitle">Tap flowers below to build a custom floral bouquet for Justine!</p>
+
+      <div class="flower-picker">
+        <button class="flower-btn" onclick="addFlower('🌹')">🌹</button>
+        <button class="flower-btn" onclick="addFlower('🌸')">🌸</button>
+        <button class="flower-btn" onclick="addFlower('🌷')">🌷</button>
+        <button class="flower-btn" onclick="addFlower('🌻')">🌻</button>
+        <button class="flower-btn" onclick="addFlower('🌺')">🌺</button>
+      </div>
+
+      <div class="bouquet-display" id="bouquet">
+        <span style="font-size: 0.95rem; color: var(--text-muted);">Tap flowers above to add them to Justine's vase!</span>
+      </div>
+
+      <button class="btn" style="background: var(--secondary-color);" onclick="clearBouquet()">Reset Vase 💐</button>
+    </div>
+  </main>
+
+  <script>
+    let count = 0;
+    function addFlower(f) {
+      const b = document.getElementById('bouquet');
+      if (count === 0) b.innerHTML = '';
+      const span = document.createElement('span');
+      span.textContent = f;
+      b.appendChild(span);
+      count++;
+    }
+
+    function clearBouquet() {
+      count = 0;
+      document.getElementById('bouquet').innerHTML = '<span style="font-size: 0.95rem; color: var(--text-muted);">Tap flowers above to add them to Justine\'s vase!</span>';
+    }
+  </script>
+</body>
+</html>
