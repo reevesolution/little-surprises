@@ -19,6 +19,8 @@ jobs:
         run: python -m unittest discover -s scripts -p 'test_approved_content.py' -v
       - name: Batch 1 acceptance checks
         run: python -m unittest discover -s scripts -p 'test_batch_one.py' -v
+      - name: USDZ model regression checks
+        run: python -m unittest discover -s scripts -p 'test_usdz_assets.py' -v
       - name: JavaScript syntax checks for 20 pages
         run: |
           python - <<'PY'
