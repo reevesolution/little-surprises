@@ -50,7 +50,7 @@ class ApprovedContent(unittest.TestCase):
     self.assertEqual(manifest[n-1]["route"],f"surprises/{n:02d}/")
     self.assertEqual(manifest[n-1]["sticker_number"],f"{n:02d}")
     self.assertEqual(manifest[n-1]["implementation_status"],"pending_rebuild")
-    self.assertNotRegex(html,re.compile(r"\\b(?:tinkerbell|tink)\\b",re.I))
+    self.assertNotRegex(html,re.compile(r"\b(?:tinkerbell|tink)\b",re.I))
     parser=HTMLCheck();parser.feed(html)
     self.assertEqual(parser.main,1)
     if n != 1:self.assertGreater(parser.buttons,0)
