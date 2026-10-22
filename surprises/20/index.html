@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Love Countdown & Celebration</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .countdown-grid {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .count-box {
+      background: #FFF0F3;
+      border: 2px solid var(--primary-color);
+      border-radius: 12px;
+      padding: 12px 16px;
+      min-width: 60px;
+    }
+    .count-num {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary-hover);
+    }
+    .count-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #20</div>
+      <h1 class="title">Love Countdown</h1>
+      <p class="subtitle">Counting down to our next anniversary & celebrating every single second!</p>
+
+      <div class="countdown-grid">
+        <div class="count-box">
+          <div class="count-num" id="days">365</div>
+          <div class="count-label">Days</div>
+        </div>
+        <div class="count-box">
+          <div class="count-num" id="hours">12</div>
+          <div class="count-label">Hours</div>
+        </div>
+        <div class="count-box">
+          <div class="count-num" id="mins">45</div>
+          <div class="count-label">Mins</div>
+        </div>
+        <div class="count-box">
+          <div class="count-num" id="secs">00</div>
+          <div class="count-label">Secs</div>
+        </div>
+      </div>
+
+      <button class="btn" onclick="celebrate()">Celebrate Now! 🎆</button>
+
+      <p style="margin-top: 20px; font-weight: 600; color: var(--primary-color);" id="celebrate-text">
+        Every second together is worth celebrating!
+      </p>
+    </div>
+  </main>
+
+  <script>
+    let seconds = 0;
+    setInterval(() => {
+      seconds++;
+      document.getElementById('secs').textContent = String(seconds % 60).padStart(2, '0');
+    }, 1000);
+
+    function celebrate() {
+      document.getElementById('celebrate-text').innerHTML = '🎆 🥂 🎉 CHEERS TO US! INFINITE HAPPY MOMENTS AHEAD! 🎉 🥂 🎆';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Hug & Kiss Overflow Meter</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .meter-box {
+      width: 100%;
+      height: 36px;
+      background: #F1F5F9;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 2px solid #E2E8F0;
+      margin: 20px 0;
+      position: relative;
+    }
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #FF758C, #FF7EB3);
+      transition: width 0.3s ease;
+    }
+    .meter-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: 700;
+      color: #1E293B;
+      font-size: 0.95rem;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #09</div>
+      <h1 class="title">Love Meter</h1>
+      <p class="subtitle">Tap to send hugs & kisses and fill up Justine's love reservoir!</p>
+
+      <div class="meter-box">
+        <div class="meter-fill" id="fill"></div>
+        <div class="meter-text" id="level-text">0% Filled</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="addLove(15)">🤗 Hug (+15%)</button>
+        <button class="btn" onclick="addLove(20)">💋 Kiss (+20%)</button>
+      </div>
+
+      <p style="margin-top: 20px; font-weight: 600; color: var(--primary-color);" id="status-msg">
+        Send some love above!
+      </p>
+    </div>
+  </main>
+
+  <script>
+    let current = 0;
+    function addLove(amount) {
+      current = Math.min(100, current + amount);
+      document.getElementById('fill').style.width = current + '%';
+      document.getElementById('level-text').textContent = current + '% Filled';
+
+      const msg = document.getElementById('status-msg');
+      if (current >= 100) {
+        msg.textContent = '🎉 OVERFLOW! Infinite hugs and kisses sent to Justine! ❤️✨';
+      } else if (current > 50) {
+        msg.textContent = '🔥 Getting super warm and cozy!';
+      } else {
+        msg.textContent = '💕 Keep filling up the love meter!';
+      }
+    }
+  </script>
+</body>
+</html>

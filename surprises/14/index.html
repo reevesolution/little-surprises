@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Romantic Ambient Soundscape Mixer</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .sound-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .sound-card {
+      background: #F8FAFC;
+      border: 2px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+    .sound-card.active {
+      background: #FFF0F3;
+      border-color: var(--primary-color);
+      box-shadow: 0 4px 12px rgba(232, 90, 113, 0.2);
+    }
+    .sound-icon {
+      font-size: 2.2rem;
+      margin-bottom: 6px;
+    }
+    .sound-label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-dark);
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #14</div>
+      <h1 class="title">Cozy Soundscape</h1>
+      <p class="subtitle">Tap ambient sound cards to toggle cozy background sounds for relaxation.</p>
+
+      <div class="sound-grid">
+        <div class="sound-card" onclick="toggleSound(this)">
+          <div class="sound-icon">🌧️</div>
+          <div class="sound-label">Gentle Rain</div>
+        </div>
+        <div class="sound-card" onclick="toggleSound(this)">
+          <div class="sound-icon">🔥</div>
+          <div class="sound-label">Warm Fireplace</div>
+        </div>
+        <div class="sound-card" onclick="toggleSound(this)">
+          <div class="sound-icon">🎹</div>
+          <div class="sound-label">Soft Piano</div>
+        </div>
+        <div class="sound-card" onclick="toggleSound(this)">
+          <div class="sound-icon">☕</div>
+          <div class="sound-label">Cozy Cafe</div>
+        </div>
+      </div>
+
+      <div class="placeholder-box">
+        🔊 Web Audio Synthesizer: Simulates warm soothing ambient sounds directly in your browser.
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function toggleSound(el) {
+      el.classList.toggle('active');
+    }
+  </script>
+</body>
+</html>

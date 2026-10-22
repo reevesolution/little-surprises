@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Beating 3D Heart in AR</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    #canvas-container {
+      width: 100%;
+      height: 250px;
+      margin: 15px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #0f0d13;
+      position: relative;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+    .ar-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #E85A71;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="ar-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+        Surprise #02 — Real Camera AR
+      </div>
+      <h1 class="title">Beating 3D Heart</h1>
+      <p class="subtitle">A pulsating 3D heart floating in your space with iPhone AR Quick Look!</p>
+
+      <!-- Apple AR Quick Look link for iOS -->
+      <div class="ar-button-container">
+        <a rel="ar" href="../../assets/models/heart.usdz" class="ar-quick-look-link">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/></a%3E" width="20" height="20" alt="AR">
+          <span>View 3D Heart in AR</span>
+        </a>
+      </div>
+
+      <div id="canvas-container">
+        <canvas id="heart-canvas"></canvas>
+      </div>
+
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        <strong>iPhone Users:</strong> Tap the button above to launch real camera Augmented Reality.<br>
+        <strong>Web View:</strong> Interactive 3D beating heart fallback above!
+      </p>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('heart-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.clientHeight * window.devicePixelRatio;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let t = 0;
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // Heart rhythm pulse
+      const beat = 1 + 0.15 * Math.pow(Math.sin(t * 3), 4);
+      const baseSize = canvas.width * 0.015;
+
+      ctx.fillStyle = '#E85A71';
+      ctx.shadowColor = '#FF2E50';
+      ctx.shadowBlur = 25;
+
+      ctx.beginPath();
+      for (let angle = 0; angle < Math.PI * 2; angle += 0.02) {
+        // Parametric heart equation
+        const x = 16 * Math.pow(Math.sin(angle), 3);
+        const y = -(13 * Math.cos(angle) - 5 * Math.cos(2*angle) - 2 * Math.cos(3*angle) - Math.cos(4*angle));
+
+        const heartX = x * baseSize * beat;
+        const heartY = y * baseSize * beat;
+
+        if (angle === 0) ctx.moveTo(heartX, heartY);
+        else ctx.lineTo(heartX, heartY);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+
+      t += 0.025;
+      requestAnimationFrame(render);
+    }
+    render();
+  </script>
+</body>
+</html>

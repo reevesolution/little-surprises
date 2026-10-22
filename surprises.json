@@ -1,0 +1,147 @@
+{
+  "project": "Little Surprises for Justine",
+  "version": "1.0.0",
+  "total_surprises": 20,
+  "manifest": [
+    {
+      "sticker_number": "01",
+      "route": "surprises/01/",
+      "title": "I LOVE YOU in AR",
+      "type": "AR Experience",
+      "description": "3D 'I LOVE YOU' floating text experience for Apple AR Quick Look with interactive web fallback."
+    },
+    {
+      "sticker_number": "02",
+      "route": "surprises/02/",
+      "title": "Beating 3D Heart in AR",
+      "type": "AR Experience",
+      "description": "Pulsating 3D heart experience for Apple AR Quick Look with interactive web fallback."
+    },
+    {
+      "sticker_number": "03",
+      "route": "surprises/03/",
+      "title": "Steeped in Love",
+      "type": "Interactive Tea & Coffee",
+      "description": "Interactive brewing experience featuring Justine's tea and Kristian's coffee."
+    },
+    {
+      "sticker_number": "04",
+      "route": "surprises/04/",
+      "title": "Love Letter Scratch Card",
+      "type": "Interactive Foil Scratch",
+      "description": "Foil scratch card revealing a sweet secret love letter for Justine."
+    },
+    {
+      "sticker_number": "05",
+      "route": "surprises/05/",
+      "title": "100 Reasons Why I Love You",
+      "type": "Generator",
+      "description": "Infinite reason generator expressing love and appreciation for Justine."
+    },
+    {
+      "sticker_number": "06",
+      "route": "surprises/06/",
+      "title": "Love Coupon Book",
+      "type": "Interactive Coupons",
+      "description": "Redeemable romantic coupons valid anytime for Justine."
+    },
+    {
+      "sticker_number": "07",
+      "route": "surprises/07/",
+      "title": "Digital Cassette Jukebox",
+      "type": "Audio Player",
+      "description": "Retro cassette mixtape player for personalized music and voice messages."
+    },
+    {
+      "sticker_number": "08",
+      "route": "surprises/08/",
+      "title": "Daily Love Fortune Cookie",
+      "type": "Interactive Fortune",
+      "description": "Interactive cookie cracking animation revealing daily romantic fortunes."
+    },
+    {
+      "sticker_number": "09",
+      "route": "surprises/09/",
+      "title": "Hug & Kiss Overflow Meter",
+      "type": "Interactive Meter",
+      "description": "Love gauge filling up with heart particles and sweet messages."
+    },
+    {
+      "sticker_number": "10",
+      "route": "surprises/10/",
+      "title": "Night Sky Constellation Heart",
+      "type": "Visual Canvas Animation",
+      "description": "Twinkling night sky animation drawing a starlight constellation heart."
+    },
+    {
+      "sticker_number": "11",
+      "route": "surprises/11/",
+      "title": "Secret Cipher Decoder Wheel",
+      "type": "Interactive Puzzle",
+      "description": "Rotating cipher ring puzzle to decrypt an encrypted romantic message."
+    },
+    {
+      "sticker_number": "12",
+      "route": "surprises/12/",
+      "title": "Romantic Couple's Quiz",
+      "type": "Interactive Quiz",
+      "description": "Playful quiz testing couple trivia with celebratory confetti."
+    },
+    {
+      "sticker_number": "13",
+      "route": "surprises/13/",
+      "title": "Virtual Bouquet Builder",
+      "type": "Interactive Flowers",
+      "description": "Virtual flower picker allowing Justine to build custom flower bouquets."
+    },
+    {
+      "sticker_number": "14",
+      "route": "surprises/14/",
+      "title": "Cozy Soundscape Mixer",
+      "type": "Audio Soundscape",
+      "description": "Ambient audio mixer with rain, fireplace, piano, and cafe sounds."
+    },
+    {
+      "sticker_number": "15",
+      "route": "surprises/15/",
+      "title": "Love Quote Slot Machine",
+      "type": "Interactive Slots",
+      "description": "Slot machine reels spinning to reveal guaranteed romantic quote wins."
+    },
+    {
+      "sticker_number": "16",
+      "route": "surprises/16/",
+      "title": "Pop the Floating Hearts Mini-Game",
+      "type": "Interactive Game",
+      "description": "Floating heart popping game with score tracking."
+    },
+    {
+      "sticker_number": "17",
+      "route": "surprises/17/",
+      "title": "Interactive Compliment Jar",
+      "type": "Jar Notes",
+      "description": "Glass jar dispensing heartfelt compliments and note cards."
+    },
+    {
+      "sticker_number": "18",
+      "route": "surprises/18/",
+      "title": "Choose Your Own Date Night",
+      "type": "Branching Story",
+      "description": "Interactive decision tree to design the perfect date night together."
+    },
+    {
+      "sticker_number": "19",
+      "route": "surprises/19/",
+      "title": "Memory Flip Notebook",
+      "type": "Digital Notebook",
+      "description": "Flip notebook with sweet note pages and personal photo placeholders."
+    },
+    {
+      "sticker_number": "20",
+      "route": "surprises/20/",
+      "title": "Love Countdown & Fireworks",
+      "type": "Countdown & Celebration",
+      "description": "Live ticking timer counting down to special moments with celebration effects."
+    }
+  ]
+}

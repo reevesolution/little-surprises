@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Daily Love Fortune Cookie</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .cookie-container {
+      margin: 30px 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cookie-icon {
+      font-size: 5rem;
+      transition: transform 0.3s ease;
+      display: inline-block;
+    }
+    .cookie-container:active .cookie-icon {
+      transform: scale(0.9) rotate(-10deg);
+    }
+    .fortune-slip {
+      background: #FFFBEB;
+      border: 2px dashed #F59E0B;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 20px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #92400E;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #08</div>
+      <h1 class="title">Love Fortune Cookie</h1>
+      <p class="subtitle">Tap the fortune cookie to crack it open and reveal your daily romantic fortune!</p>
+
+      <div class="cookie-container" onclick="crackCookie()">
+        <div class="cookie-icon" id="cookie">🥠</div>
+      </div>
+
+      <div class="fortune-slip" id="fortune">
+        Tap the cookie above to open!
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const fortunes = [
+      "🥠 'A warm cup of tea and endless love await you today!'",
+      "🥠 'Your smile will trigger a chain reaction of pure happiness.'",
+      "🥠 'An unexpected sweet surprise is coming your way very soon!'",
+      "🥠 'Today is the perfect day for cozy snuggles and great conversations.'",
+      "🥠 'You are deeply cherished, today and every single day!'"
+    ];
+
+    function crackCookie() {
+      const cookie = document.getElementById('cookie');
+      const fortune = document.getElementById('fortune');
+
+      cookie.style.transform = 'scale(1.2) rotate(15deg)';
+      setTimeout(() => {
+        cookie.style.transform = 'scale(1) rotate(0deg)';
+        const randomFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+        fortune.textContent = randomFortune;
+      }, 200);
+    }
+  </script>
+</body>
+</html>

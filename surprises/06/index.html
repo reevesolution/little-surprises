@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Love Coupons for Justine</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .coupon-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .coupon {
+      background: #FFFFFF;
+      border: 2px dashed var(--primary-color);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: left;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .coupon.redeemed {
+      background: #F1F5F9;
+      border-color: #94A3B8;
+      opacity: 0.7;
+    }
+    .coupon-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+    .coupon-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .redeem-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .coupon.redeemed .redeem-btn {
+      background: #64748B;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #06</div>
+      <h1 class="title">Love Coupons</h1>
+      <p class="subtitle">Redeemable anytime by Justine. Valid forever!</p>
+
+      <div class="coupon-list">
+        <div class="coupon" id="c1">
+          <div class="coupon-title">☕ Special Morning Brew Service</div>
+          <div class="coupon-desc">Freshly prepared tea for Justine, served with breakfast in bed.</div>
+          <button class="redeem-btn" onclick="redeem('c1')">Redeem Coupon</button>
+        </div>
+
+        <div class="coupon" id="c2">
+          <div class="coupon-title">🎬 Movie Night Controller</div>
+          <div class="coupon-desc">Justine chooses the movie, snacks, and prime couch seating.</div>
+          <button class="redeem-btn" onclick="redeem('c2')">Redeem Coupon</button>
+        </div>
+
+        <div class="coupon" id="c3">
+          <div class="coupon-title">💆 Hand & Foot Massage</div>
+          <div class="coupon-desc">20 minutes of total relaxation guaranteed.</div>
+          <button class="redeem-btn" onclick="redeem('c3')">Redeem Coupon</button>
+        </div>
+
+        <div class="coupon" id="c4">
+          <div class="coupon-title">🍕 Dinner Decision Pass</div>
+          <div class="coupon-desc">Kristian cooks or orders whatever Justine craves!</div>
+          <button class="redeem-btn" onclick="redeem('c4')">Redeem Coupon</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function redeem(id) {
+      const el = document.getElementById(id);
+      if (!el.classList.contains('redeemed')) {
+        el.classList.add('redeemed');
+        const btn = el.querySelector('.redeem-btn');
+        btn.textContent = '✓ Redeemed!';
+      }
+    }
+  </script>
+</body>
+</html>

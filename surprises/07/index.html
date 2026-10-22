@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Digital Cassette Jukebox</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .cassette {
+      background: #2D3748;
+      border-radius: 16px;
+      padding: 20px;
+      color: white;
+      margin: 20px 0;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+    .cassette-reels {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: #1A202C;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .reel {
+      width: 50px;
+      height: 50px;
+      border: 4px dashed #CBD5E1;
+      border-radius: 50%;
+      animation: spin 3s linear infinite;
+      animation-play-state: paused;
+    }
+    .playing .reel {
+      animation-play-state: running;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+    .track-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #F6AD55;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #07</div>
+      <h1 class="title">Love Mixtape</h1>
+      <p class="subtitle">Justine & Kristian's personal soundtrack cassette player.</p>
+
+      <div class="cassette" id="cassette">
+        <div class="cassette-reels">
+          <div class="reel"></div>
+          <div style="font-size: 1.2rem;">📼</div>
+          <div class="reel"></div>
+        </div>
+        <div class="track-title" id="track-name">Track 1: Warm Morning Tea & Coffee</div>
+        <div style="font-size: 0.85rem; color: #A0AEC0;" id="artist">Special Acoustic Melody</div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center;">
+        <button class="btn" onclick="togglePlay()" id="play-btn">▶ Play Track</button>
+        <button class="btn" style="background: var(--secondary-color);" onclick="nextTrack()">⏭ Next</button>
+      </div>
+
+      <div class="placeholder-box" style="margin-top: 20px;">
+        🎵 Owner Audio Placeholder: Add custom MP3 files into <code>assets/audio/</code> to play personalized voice notes or music tracks.
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const playlist = [
+      { title: "Track 1: Morning Coffee & Warm Tea", artist: "Acoustic Love Notes" },
+      { title: "Track 2: Golden Hour Memories", artist: "Sweet Piano Dreams" },
+      { title: "Track 3: Late Night Laughs", artist: "Lo-Fi Cafe Vibes" }
+    ];
+    let current = 0;
+    let isPlaying = false;
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      const cassette = document.getElementById('cassette');
+      const btn = document.getElementById('play-btn');
+      if (isPlaying) {
+        cassette.classList.add('playing');
+        btn.textContent = '⏸ Pause';
+      } else {
+        cassette.classList.remove('playing');
+        btn.textContent = '▶ Play Track';
+      }
+    }
+
+    function nextTrack() {
+      current = (current + 1) % playlist.length;
+      document.getElementById('track-name').textContent = playlist[current].title;
+      document.getElementById('artist').textContent = playlist[current].artist;
+    }
+  </script>
+</body>
+</html>

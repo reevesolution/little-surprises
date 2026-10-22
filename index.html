@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>A Little Surprise For You</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="floating-hearts" id="hearts-bg"></div>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Special Delivery</div>
+      <h1 class="title">A Special Surprise</h1>
+      <p class="subtitle">Scan a QR code sticker to open your personalized experience.</p>
+      <div style="font-size: 3rem; margin: 20px 0;">✨ ☕ 🍵 ✨</div>
+      <p style="font-size: 0.95rem; color: var(--text-muted); line-height: 1.5;">
+        Every sticker holds a unique moment created just for you. Keep scanning to explore!
+      </p>
+    </div>
+  </main>
+  <script>
+    const bg = document.getElementById('hearts-bg');
+    if (bg) {
+      const symbols = ['💖', '✨', '🍵', '☕', '🌸'];
+      for (let i = 0; i < 15; i++) {
+        const span = document.createElement('span');
+        span.className = 'floating-heart';
+        span.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        span.style.left = Math.random() * 100 + 'vw';
+        span.style.animationDuration = (6 + Math.random() * 6) + 's';
+        span.style.animationDelay = (Math.random() * 5) + 's';
+        span.style.fontSize = (16 + Math.random() * 16) + 'px';
+        bg.appendChild(span);
+      }
+    }
+  </script>
+</body>
+</html>

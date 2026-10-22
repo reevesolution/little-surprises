@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Choose Your Own Date Night</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .story-box {
+      background: #F8FAFC;
+      border-radius: 14px;
+      padding: 20px;
+      margin: 15px 0;
+      min-height: 100px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .option-btn {
+      background: #FFFFFF;
+      border: 2px solid var(--primary-color);
+      color: var(--primary-hover);
+      padding: 12px 18px;
+      border-radius: 25px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .option-btn:active {
+      background: var(--primary-color);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #18</div>
+      <h1 class="title">Date Night Adventure</h1>
+      <p class="subtitle">Choose your own path to design our next ideal date night!</p>
+
+      <div class="story-box" id="story">
+        Step 1: Where are we heading tonight?
+      </div>
+
+      <div class="options-grid" id="options">
+        <button class="option-btn" onclick="choose('cozy')">🏡 Cozy Night In at Home</button>
+        <button class="option-btn" onclick="choose('out')">🌆 Fun Evening Out on the Town</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function choose(choice) {
+      const story = document.getElementById('story');
+      const options = document.getElementById('options');
+
+      if (choice === 'cozy') {
+        story.innerHTML = '🏡 Step 2: What are we sipping on?<br><br>🍵 Tea for Justine + ☕ Coffee for Kristian!';
+        options.innerHTML = `
+          <button class="option-btn" onclick="finish('Movie Marathon & Pizza')">🎬 Movie Marathon & Hot Pizza</button>
+          <button class="option-btn" onclick="finish('Board Games & Dessert')">🎲 Board Game Night & Fresh Bakery Sweets</button>
+        `;
+      } else if (choice === 'out') {
+        story.innerHTML = '🌆 Step 2: What is our main activity?';
+        options.innerHTML = `
+          <button class="option-btn" onclick="finish('Romantic Dinner & Dessert Walk')">🍽️ Candlelit Dinner & Dessert Walk</button>
+          <button class="option-btn" onclick="finish('Stargazing & Hot Drinks')">🌌 Night Stargazing & Hot Drinks</button>
+        `;
+      }
+    }
+
+    function finish(finalChoice) {
+      document.getElementById('story').innerHTML = `🎉 <strong>OFFICIAL DATE NIGHT PLANNED!</strong><br><br>✨ ${finalChoice}! It's a date! ❤️`;
+      document.getElementById('options').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

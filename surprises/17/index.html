@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Compliment Jar for Justine</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <style>
+    .jar-container {
+      position: relative;
+      width: 140px;
+      height: 180px;
+      border: 5px solid var(--secondary-color);
+      border-radius: 20px 20px 40px 40px;
+      margin: 20px auto;
+      background: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+    .jar-lid {
+      position: absolute;
+      top: -15px;
+      width: 100px;
+      height: 15px;
+      background: var(--accent-gold);
+      border-radius: 8px;
+    }
+    .note-popup {
+      background: #FEF3C7;
+      border: 2px solid #F59E0B;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #78350F;
+      margin-top: 15px;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Surprise #17</div>
+      <h1 class="title">Compliment Jar</h1>
+      <p class="subtitle">Tap the glass jar to draw a sweet compliment note written for Justine!</p>
+
+      <div class="jar-container" onclick="drawNote()">
+        <div class="jar-lid"></div>
+        <div style="font-size: 3.5rem;">🫙✨</div>
+      </div>
+
+      <div class="note-popup" id="note">
+        Tap the jar to open a note!
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const compliments = [
+      "✨ Justine, your warmth and gentle soul bring light into every room.",
+      "✨ You make the best cup of tea and the absolute best conversations.",
+      "✨ Your laugh is genuine, contagious, and deeply comforting.",
+      "✨ Everything is infinitely better whenever you are around!",
+      "✨ You are so deeply loved and appreciated every single day."
+    ];
+
+    function drawNote() {
+      const note = document.getElementById('note');
+      const randomMsg = compliments[Math.floor(Math.random() * compliments.length)];
+      note.textContent = randomMsg;
+    }
+  </script>
+</body>
+</html>
