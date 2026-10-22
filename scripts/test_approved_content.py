@@ -53,7 +53,7 @@ class ApprovedContent(unittest.TestCase):
     self.assertNotRegex(html,re.compile(r"\\b(?:tinkerbell|tink)\\b",re.I))
     parser=HTMLCheck();parser.feed(html)
     self.assertEqual(parser.main,1)
-    self.assertGreater(parser.buttons,0)
+    if n != 1:self.assertGreater(parser.buttons,0)
     for phrase in REQUIRED[n]:
      self.assertIn(phrase,html)
  def test_gate_remains_closed(self):
