@@ -391,20 +391,17 @@ def format_material(name, diff_color, roughness=0.3, metallic=0.0, opacity=1.0, 
 
 def package_usdz(usda_content, output_usdz_path):
     """
-    Writes a USDA file and packages it into a valid 64-byte aligned,
-    uncompressed (ZIP_STORED) .usdz file per Apple USDZ specification.
+    Packages USDA text into an uncompressed (ZIP_STORED) .usdz whose first file's
+    data begins on a 64-byte boundary, per the USDZ specification.
     """
-    tmp_usda = output_usdz_path.with_suffix(".usda")
-    tmp_usda.write_text(usda_content, encoding="utf-8")
-
-    # Build USDZ: zip with ZIP_STORED
+    name = "model.usda"
+    info = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
+    info.compress_type = zipfile.ZIP_STORED
+    header_len = 30 + len(name.encode("utf-8"))
+    pad = (64 - (header_len + 4) % 64) % 64  # extra field = 4-byte header + pad bytes
+    info.extra = struct.pack("<HH", 0x1986, pad) + b"\0" * pad
     with zipfile.ZipFile(output_usdz_path, "w", compression=zipfile.ZIP_STORED) as zf:
-        # First entry must be the USDA file
-        zf.write(tmp_usda, arcname="model.usda")
-
-    if tmp_usda.exists():
-        tmp_usda.unlink()
-
+        zf.writestr(info, usda_content.encode("utf-8"))
 
 # ==============================================================================
 # 1. Model: I LOVE YOU in AR (iloveyou.usdz)
