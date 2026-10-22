@@ -175,6 +175,24 @@ class OpenUsdGeometry(unittest.TestCase):
             size = box.GetMax() - box.GetMin()
             self.assertTrue(0.10 <= max(size) <= 1.0, f"{name} longest side {max(size):.2f} m outside 0.10-1.0 m")
 
+    def test_usd_validation_framework(self):
+        try:
+            from pxr import UsdValidation
+        except ImportError:
+            if REQUIRE:
+                self.fail("UsdValidation module is required (REQUIRE_USD_CHECKS=1)")
+            self.skipTest("UsdValidation module not available locally")
+            return
+        reg = UsdValidation.ValidationRegistry()
+        validators = reg.GetOrLoadAllValidators()
+        self.assertGreater(len(validators), 0, "No validators loaded in UsdValidation registry")
+        ctx = UsdValidation.ValidationContext(validators)
+        for name in NAMES:
+            with self.subTest(model=name):
+                stage, _ = self._meshes(name)
+                errors = ctx.Validate(stage)
+                self.assertEqual(errors, [], f"UsdValidation failed for {name}: {[e.GetMessage() for e in errors]}")
+
 
 class ArkitCompliance(unittest.TestCase):
     def test_arkit_rules(self):

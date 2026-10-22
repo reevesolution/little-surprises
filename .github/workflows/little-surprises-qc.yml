@@ -24,10 +24,11 @@ jobs:
           python -m pip install 'usd-core==26.11'
           mkdir -p /tmp/openusd-checker
           curl --fail --location --retry 3 --silent --show-error \
-            'https://raw.githubusercontent.com/PixarAnimationStudios/OpenUSD/v26.11/pxr/usd/usdUtils/complianceChecker.py' \
+            'https://raw.githubusercontent.com/PixarAnimationStudios/OpenUSD/v26.05/pxr/usd/usdUtils/complianceChecker.py' \
             -o /tmp/openusd-checker/complianceChecker.py
+          echo "bed35b2b088f882a82578f41c60e66a3f060313ab57758d4c182f79b8be0d72e  /tmp/openusd-checker/complianceChecker.py" | sha256sum --check --status
           test -s /tmp/openusd-checker/complianceChecker.py
-          python -c 'from pxr import Usd; print("OpenUSD", Usd.GetVersion())'
+          python -c 'from pxr import Usd, Sdr; print("OpenUSD", Usd.GetVersion()); assert Sdr.Registry().GetShaderNodeByIdentifier("UsdPreviewSurface") is not None, "shaderDefs.usda missing"'
       - name: USDZ model regression checks (required, no skips)
         env:
           REQUIRE_USD_CHECKS: '1'
