@@ -19,7 +19,19 @@ jobs:
         run: python -m unittest discover -s scripts -p 'test_approved_content.py' -v
       - name: Batch 1 acceptance checks
         run: python -m unittest discover -s scripts -p 'test_batch_one.py' -v
-      - name: USDZ model regression checks
+      - name: Install OpenUSD and ARKit compliance checker
+        run: |
+          python -m pip install 'usd-core==25.8'
+          mkdir -p /tmp/openusd-checker
+          curl --fail --location --retry 3 --silent --show-error \
+            'https://raw.githubusercontent.com/PixarAnimationStudios/OpenUSD/v25.08/pxr/usd/usdUtils/complianceChecker.py' \
+            -o /tmp/openusd-checker/complianceChecker.py
+          test -s /tmp/openusd-checker/complianceChecker.py
+          python -c 'from pxr import Usd; print("OpenUSD", Usd.GetVersion())'
+      - name: USDZ model regression checks (required, no skips)
+        env:
+          REQUIRE_USD_CHECKS: '1'
+          USD_COMPLIANCE_CHECKER_DIR: /tmp/openusd-checker
         run: python -m unittest discover -s scripts -p 'test_usdz_assets.py' -v
       - name: JavaScript syntax checks for 20 pages
         run: |
