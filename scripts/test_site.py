@@ -19,6 +19,13 @@ def test_site():
             manifest = data.get("manifest", [])
             if len(manifest) != 20:
                 errors.append(f"Manifest entry count mismatch! Expected 20, got {len(manifest)}")
+            expected = [f"{i:02d}" for i in range(1, 21)]
+            actual = [entry.get("sticker_number") for entry in manifest]
+            if actual != expected:
+                errors.append("Manifest sticker numbers must be exactly 01 through 20 in order")
+            for entry in manifest:
+                if entry.get("implementation_status") != "verified":
+                    errors.append(f"Surprise {entry.get('sticker_number')} not verified against approved content")
         except Exception as e:
             errors.append(f"Invalid surprises.json format: {e}")
 
@@ -53,7 +60,7 @@ def test_site():
             print(f" - {err}")
         sys.exit(1)
     else:
-        print("\n✅ ALL SITE VERIFICATION CHECKS PASSED SUCCESSFULLY!")
+        print("\n✅ MANIFEST, CONTENT GATES AND SITE STRUCTURE PASSED!")
 
 if __name__ == "__main__":
     test_site()
