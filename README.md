@@ -1,56 +1,34 @@
-# Little Surprises for Justine (V1)
+# Little Surprises for Justine
 
-A lightweight static GitHub Pages website with 20 distinct, mobile-first interactive surprise destinations for Justine, accessed via QR stickers numbered 01–20.
+Twenty distinct, numbered, mobile-first surprises, reached by scanning private physical QR stickers. Static GitHub Pages; no sign-in, tracking, backend, or public index of the experiences.
 
-## 🌟 Highlights
-- **20 Interactive Destinations**:
-  - `01`: 3D "I LOVE YOU" in Augmented Reality (iPhone AR Quick Look USDZ) with 3D WebGL fallback.
-  - `02`: Beating 3D Heart in Augmented Reality (iPhone AR Quick Look USDZ) with 3D WebGL fallback.
-  - `03`: "Steeped in Love" Tea (Justine) & Coffee (Kristian) interactive brewing experience.
-  - `04`: Interactive Love Letter Scratch Card.
-  - `05`: "100 Reasons Why I Love You" card generator.
-  - `06`: Redeemable Love Coupon Book for Justine.
-  - `07`: Retro Mixtape / Cassette Jukebox player.
-  - `08`: Daily Love Fortune Cookie with cracking animation.
-  - `09`: Hug & Kiss Overflow Meter.
-  - `10`: Night Sky Starlight Constellation Heart.
-  - `11`: Secret Cipher Decoder Wheel.
-  - `12`: Romantic Couple's Trivia Quiz with confetti.
-  - `13`: Virtual Flower Bouquet Builder.
-  - `14`: Cozy Soundscape Ambient Audio Mixer.
-  - `15`: Love Quote Slot Machine.
-  - `16`: Pop the Floating Hearts Mini-Game.
-  - `17`: Interactive Compliment Jar.
-  - `18`: Choose Your Own Date Night adventure.
-  - `19`: Memory Flipbook with photo placeholders.
-  - `20`: Love Countdown & Ticking Timer with celebration fireworks.
+## Status — independent Antigravity QC required
 
-## 📱 Real Camera AR Instructions & iPhone Device Testing
-- **Experiences**: Destinations `01` and `02` feature real camera Augmented Reality powered by Apple AR Quick Look USDZ models (`assets/models/iloveyou.usdz` and `assets/models/heart.usdz`).
-- **Owner Real-Device Testing Note**: AR Quick Look requires real camera passthrough on an iPhone/iPad running iOS Safari or Chrome. Please test directly on an iPhone after GitHub Pages deployment before printing final stickers. Non-iOS or desktop browsers will seamlessly load the interactive 3D WebGL/Canvas fallback.
+The 20 approved concepts have been implemented on `skippy/approved-surprises-rebuild`. This is a **review candidate, not a deployable or printable release**. The `surprises.json` manifest intentionally leaves every `implementation_status` at `pending_rebuild` until independent evidence and Captain approval. The sticker generator refuses to run against unverified content.
 
-## 🖨️ Generating Printable QR Sticker Sheet
-1. Once GitHub Pages is activated and you have your final published URL (e.g. `https://<username>.github.io/<repo-name>/`), run:
-   ```bash
-   python3 scripts/generate_stickers.py "https://<username>.github.io/<repo-name>/"
-   ```
-2. Open `sticker_sheet.html` in your browser.
-3. Print using standard Letter size (8.5" x 11") in portrait mode.
-4. The sticker sheet renders a **4 columns x 5 rows grid** with **20 stickers**, numbered `#01` through `#20` with 1.5-inch square QR codes and generous quiet zones.
+### Known acceptance gaps
 
-## 🚀 GitHub Pages Activation Instructions
-1. Push this repository to GitHub.
-2. Go to **Settings > Pages** in your GitHub repository.
-3. Under **Build and deployment**, set **Source** to `Deploy from a branch`.
-4. Select the `main` branch and `/ (root)` folder, then click **Save**.
-5. GitHub Pages will build and deploy your site within 1–2 minutes.
+- **#01 and #11 AR:** USDZ files inherited from Jules. Their geometry, iPhone Quick Look compatibility, and appearance have not been independently validated on a device. Browser fallbacks are animated 2D visuals, not equivalent 3D scenes.
+- **#15 Alien Love Transmission:** animated browser experience exists, but **the approved real iPhone UFO AR model has not been created**. This is a blocker to full acceptance.
+- **#12 Tiny Jukebox:** embeds Blake Shelton's official-channel **I'll Name the Dogs** audio, video ID `FR-FoZzp0D8`, on a user tap. Confirm that the embed works on iPhone Safari and that the external link fallback works; YouTube can restrict embeds.
+- **#16 Now Showing: Us:** illustrated placeholder scenes only. Personal photos have not yet been provided.
+- **#02, #03, #04, #05 and all other pages:** require actual touch/browser visual and behavioral tests. Source-level checks are not a substitute for human device testing.
+- **QR printing:** no published production URL and no sticker sheet approved. The existing `sticker_sheet.html` is a legacy sample and must not be printed.
 
-## 📷 Owner Asset Customization
-- **Photos**: Place custom personal photos inside `assets/images/` and update references in `surprises/19/index.html`.
-- **Audio**: Place MP3 audio files inside `assets/audio/` and update references in `surprises/07/index.html`.
+## Run local preflight
 
-## 🧪 Automated Site Verification
-Run the site test suite to verify file structure, manifest validity, and rule compliance:
-```bash
+```sh
+python3 -m unittest discover -s scripts -p 'test_approved_content.py' -v
+python3 -m unittest discover -s scripts -p 'test_batch_one.py' -v
 python3 scripts/test_site.py
 ```
+
+The first two tests check source-level content and structure. `test_site.py` **must fail until all 20 experiences are independently verified**, by design. GitHub Actions additionally runs `node --check` on inline JavaScript.
+
+## QR sticker production — only after approval
+
+`scripts/generate_stickers.py` requires a real HTTPS base URL and all 20 entries marked verified. It creates `sticker_sheet.html` (4 columns × 5 rows on US Letter). Before printing, independently confirm every final URL, QR scan, correct numbering, correct sticker stock/layout, and that the QR provider can fetch images. Never print the old sample sheet.
+
+## Antigravity gate
+
+See `ANTIGRAVITY_GATE.md` for the independent review checklist and stop conditions. Do not merge Jules PR #2 or the rebuild PR, deploy, print, or mark all manifest entries verified before independent QC and explicit Captain approval.
