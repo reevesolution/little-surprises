@@ -1,147 +1,168 @@
 {
   "project": "Little Surprises for Justine",
-  "version": "1.0.0",
+  "version": "1.0.0-rebuild",
   "total_surprises": 20,
   "manifest": [
     {
       "sticker_number": "01",
       "route": "surprises/01/",
       "title": "I LOVE YOU in AR",
-      "type": "AR Experience",
-      "description": "3D 'I LOVE YOU' floating text experience for Apple AR Quick Look with interactive web fallback."
+      "type": "AR",
+      "description": "Approved surprise #01: I LOVE YOU in AR. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "02",
       "route": "surprises/02/",
-      "title": "Beating 3D Heart in AR",
-      "type": "AR Experience",
-      "description": "Pulsating 3D heart experience for Apple AR Quick Look with interactive web fallback."
+      "title": "Love Lottery Scratch-Off",
+      "type": "Scratch-off",
+      "description": "Approved surprise #02: Love Lottery Scratch-Off. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "03",
       "route": "surprises/03/",
-      "title": "Steeped in Love",
-      "type": "Interactive Tea & Coffee",
-      "description": "Interactive brewing experience featuring Justine's tea and Kristian's coffee."
+      "title": "Handwritten Love Letter",
+      "type": "Animated letter",
+      "description": "Approved surprise #03: Handwritten Love Letter. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "04",
       "route": "surprises/04/",
-      "title": "Love Letter Scratch Card",
-      "type": "Interactive Foil Scratch",
-      "description": "Foil scratch card revealing a sweet secret love letter for Justine."
+      "title": "Emergency Love Button",
+      "type": "Interactive button",
+      "description": "Approved surprise #04: Emergency Love Button. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "05",
       "route": "surprises/05/",
-      "title": "100 Reasons Why I Love You",
-      "type": "Generator",
-      "description": "Infinite reason generator expressing love and appreciation for Justine."
+      "title": "Official Husband Report Card",
+      "type": "Interactive ratings",
+      "description": "Approved surprise #05: Official Husband Report Card. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "06",
       "route": "surprises/06/",
-      "title": "Love Coupon Book",
-      "type": "Interactive Coupons",
-      "description": "Redeemable romantic coupons valid anytime for Justine."
+      "title": "Put My Heart Together",
+      "type": "Heart puzzle",
+      "description": "Approved surprise #06: Put My Heart Together. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "07",
       "route": "surprises/07/",
-      "title": "Digital Cassette Jukebox",
-      "type": "Audio Player",
-      "description": "Retro cassette mixtape player for personalized music and voice messages."
+      "title": "Written in the Stars",
+      "type": "Star constellation",
+      "description": "Approved surprise #07: Written in the Stars. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "08",
       "route": "surprises/08/",
-      "title": "Daily Love Fortune Cookie",
-      "type": "Interactive Fortune",
-      "description": "Interactive cookie cracking animation revealing daily romantic fortunes."
+      "title": "Professor Husband's Love Potion Lab",
+      "type": "Potion lab",
+      "description": "Approved surprise #08: Professor Husband's Love Potion Lab. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "09",
       "route": "surprises/09/",
-      "title": "Hug & Kiss Overflow Meter",
-      "type": "Interactive Meter",
-      "description": "Love gauge filling up with heart particles and sweet messages."
+      "title": "Interactive Fortune Cookie",
+      "type": "Fortune cookie",
+      "description": "Approved surprise #09: Interactive Fortune Cookie. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "10",
       "route": "surprises/10/",
-      "title": "Night Sky Constellation Heart",
-      "type": "Visual Canvas Animation",
-      "description": "Twinkling night sky animation drawing a starlight constellation heart."
+      "title": "Love-O-Meter",
+      "type": "Arcade meter",
+      "description": "Approved surprise #10: Love-O-Meter. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "11",
       "route": "surprises/11/",
-      "title": "Secret Cipher Decoder Wheel",
-      "type": "Interactive Puzzle",
-      "description": "Rotating cipher ring puzzle to decrypt an encrypted romantic message."
+      "title": "Hold My Heart in AR",
+      "type": "AR",
+      "description": "Approved surprise #11: Hold My Heart in AR. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "12",
       "route": "surprises/12/",
-      "title": "Romantic Couple's Quiz",
-      "type": "Interactive Quiz",
-      "description": "Playful quiz testing couple trivia with celebratory confetti."
+      "title": "The Tiny Jukebox",
+      "type": "Music player",
+      "description": "Approved surprise #12: The Tiny Jukebox. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "13",
       "route": "surprises/13/",
-      "title": "Virtual Bouquet Builder",
-      "type": "Interactive Flowers",
-      "description": "Virtual flower picker allowing Justine to build custom flower bouquets."
+      "title": "Hug Delivery Service",
+      "type": "Interactive parcel",
+      "description": "Approved surprise #13: Hug Delivery Service. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "14",
       "route": "surprises/14/",
-      "title": "Cozy Soundscape Mixer",
-      "type": "Audio Soundscape",
-      "description": "Ambient audio mixer with rain, fireplace, piano, and cafe sounds."
+      "title": "The Love Time Machine",
+      "type": "Time machine",
+      "description": "Approved surprise #14: The Love Time Machine. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "15",
       "route": "surprises/15/",
-      "title": "Love Quote Slot Machine",
-      "type": "Interactive Slots",
-      "description": "Slot machine reels spinning to reveal guaranteed romantic quote wins."
+      "title": "Alien Love Transmission",
+      "type": "AR",
+      "description": "Approved surprise #15: Alien Love Transmission. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "16",
       "route": "surprises/16/",
-      "title": "Pop the Floating Hearts Mini-Game",
-      "type": "Interactive Game",
-      "description": "Floating heart popping game with score tracking."
+      "title": "Now Showing: Us",
+      "type": "Photo slideshow",
+      "description": "Approved surprise #16: Now Showing: Us. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "17",
       "route": "surprises/17/",
-      "title": "Interactive Compliment Jar",
-      "type": "Jar Notes",
-      "description": "Glass jar dispensing heartfelt compliments and note cards."
+      "title": "Case File: Stolen Heart",
+      "type": "Detective mystery",
+      "description": "Approved surprise #17: Case File: Stolen Heart. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "18",
       "route": "surprises/18/",
-      "title": "Choose Your Own Date Night",
-      "type": "Branching Story",
-      "description": "Interactive decision tree to design the perfect date night together."
+      "title": "The Love Garden",
+      "type": "Growing flower",
+      "description": "Approved surprise #18: The Love Garden. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "19",
       "route": "surprises/19/",
-      "title": "Memory Flip Notebook",
-      "type": "Digital Notebook",
-      "description": "Flip notebook with sweet note pages and personal photo placeholders."
+      "title": "The Kissing Booth",
+      "type": "Carnival prizes",
+      "description": "Approved surprise #19: The Kissing Booth. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     },
     {
       "sticker_number": "20",
       "route": "surprises/20/",
-      "title": "Love Countdown & Fireworks",
-      "type": "Countdown & Celebration",
-      "description": "Live ticking timer counting down to special moments with celebration effects."
+      "title": "My Favorite Place in the Universe",
+      "type": "Interactive Earth",
+      "description": "Approved surprise #20: My Favorite Place in the Universe. Implementation must follow Captain-approved content; legacy Jules page is not accepted.",
+      "implementation_status": "pending_rebuild"
     }
-  ]
+  ],
+  "content_authority": "Captain-approved 20-surprise specification; legacy pages are placeholders pending rebuild"
 }

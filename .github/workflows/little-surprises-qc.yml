@@ -1,0 +1,49 @@
+name: Little Surprises pre-Antigravity checks
+on:
+  push:
+    branches: [skippy/approved-surprises-rebuild]
+  pull_request:
+    paths: ['surprises/**', 'scripts/**', 'surprises.json', '.github/workflows/little-surprises-qc.yml']
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Locked content checks
+        run: python -m unittest discover -s scripts -p 'test_approved_content.py' -v
+      - name: Batch 1 acceptance checks
+        run: python -m unittest discover -s scripts -p 'test_batch_one.py' -v
+      - name: Install OpenUSD and ARKit compliance checker
+        run: |
+          python -m pip install 'usd-core==26.11'
+          mkdir -p /tmp/openusd-checker
+          curl --fail --location --retry 3 --silent --show-error \
+            'https://raw.githubusercontent.com/PixarAnimationStudios/OpenUSD/v26.05/pxr/usd/usdUtils/complianceChecker.py' \
+            -o /tmp/openusd-checker/complianceChecker.py
+          echo "4830623990e5da74ccf79ba689918de7d6c632ce8b01726540489047abffca43  /tmp/openusd-checker/complianceChecker.py" | sha256sum --check
+          test -s /tmp/openusd-checker/complianceChecker.py
+          python -c 'from pxr import Usd, Sdr; print("OpenUSD", Usd.GetVersion()); assert Sdr.Registry().GetShaderNodeByIdentifier("UsdPreviewSurface") is not None, "shaderDefs.usda missing"'
+      - name: USDZ model regression checks (required, no skips)
+        env:
+          REQUIRE_USD_CHECKS: '1'
+          USD_COMPLIANCE_CHECKER_DIR: /tmp/openusd-checker
+        run: python -m unittest discover -s scripts -p 'test_usdz_assets.py' -v
+      - name: JavaScript syntax checks for 20 pages
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          for page in sorted(Path("surprises").glob("*/index.html")):
+              html = page.read_text(encoding="utf-8")
+              scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, re.S | re.I)
+              for index, script in enumerate(scripts):
+                  target = Path("/tmp") / f"little-surprises-{page.parent.name}-{index}.js"
+                  target.write_text(script, encoding="utf-8")
+          PY
+          for script in /tmp/little-surprises-*.js; do node --check "$script"; done

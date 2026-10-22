@@ -2,218 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Printable QR Sticker Sheet (4x5 Grid - 20 Stickers)</title>
+  <title>QR Sticker Sheet — QUARANTINED (DO NOT PRINT)</title>
   <style>
-    @page {
-      size: letter portrait;
-      margin: 0.4in;
-    }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #FFFFFF;
-      color: #000000;
-      width: 8.5in;
-      height: 11in;
+      background: #FFF5F5;
+      color: #7F1D1D;
+      padding: 40px;
+      line-height: 1.6;
+      max-width: 720px;
       margin: 0 auto;
-      padding: 0.4in;
     }
-    .no-print-banner {
-      background: #FFFBEB;
-      border: 1px solid #F59E0B;
-      color: #92400E;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      font-size: 0.9rem;
+    .warning-box {
+      background: #FEF2F2;
+      border: 3px solid #DC2626;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
     }
-    @media print {
-      .no-print-banner {
-        display: none;
-      }
-      body {
-        padding: 0;
-      }
-    }
-    .sticker-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1.75in);
-      grid-template-rows: repeat(5, 1.9in);
-      gap: 0.15in 0.2in;
-      justify-content: center;
-      align-content: center;
-    }
-    .sticker {
-      width: 1.75in;
-      height: 1.9in;
-      border: 1px dashed #CBD5E1;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 0.08in;
-      background: #FFFFFF;
-      page-break-inside: avoid;
-    }
-    .qr-container {
-      width: 1.4in;
-      height: 1.4in;
+    h1 {
+      color: #991B1B;
+      font-size: 1.6rem;
+      margin-bottom: 16px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      background: #FFFFFF;
-      padding: 4px; /* Quiet zone around QR code */
+      gap: 10px;
     }
-    .qr-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
+    p {
+      margin-bottom: 14px;
+      color: #374151;
     }
-    .sticker-number {
-      font-size: 0.85rem;
-      font-weight: 800;
+    code {
+      background: #F3F4F6;
+      color: #1F2937;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      background: #1F2937;
+      color: #F9FAFB;
+      padding: 14px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.9em;
+      margin: 12px 0;
+    }
+    .status-badge {
+      display: inline-block;
+      background: #DC2626;
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #1E293B;
-      margin-top: 2px;
+      margin-bottom: 12px;
+    }
+    /* Strictly suppress printing of quarantined dummy sheets */
+    @media print {
+      body {
+        display: none !important;
+      }
     }
   </style>
 </head>
 <body>
-
-  <div class="no-print-banner">
-    <strong>🖨️ Printable Sticker Sheet Instructions:</strong><br>
-    Target Base URL: <code>https://example-github-pages-url.com/</code><br>
-    • Letter Size (8.5" x 11") | 4 Columns x 5 Rows Grid (20 Stickers)<br>
-    • Press <code>Ctrl+P</code> or <code>Cmd+P</code> to print. Ensure margin is set to 'None' or 'Default'.
+  <div class="warning-box">
+    <div class="status-badge">Quarantined / Release Gate Closed</div>
+    <h1>⚠️ QR Sticker Sheet Quarantined</h1>
+    <p>
+      The previous sample sticker sheet contained unverified dummy URLs (<code>https://example-github-pages-url.com/</code>).
+      To prevent accidental scanning or physical paper printing of dead URLs, this sample has been quarantined.
+    </p>
+    <p>
+      <strong>Printing has been disabled for this page.</strong>
+    </p>
+    <hr style="border: 0; border-top: 1px solid #FCA5A5; margin: 20px 0;">
+    <p>
+      <strong>How to generate the official printable sticker sheet:</strong><br>
+      Production sticker sheet generation requires that all 20 manifest items are marked <code>verified</code>
+      and an authorized live HTTPS destination URL is provided to the generator script:
+    </p>
+    <pre>python scripts/generate_stickers.py https://&lt;your-live-deployment-url&gt;/</pre>
+    <p>
+      Do not generate or print stickers until Captain and Skippy have granted final milestone acceptance.
+    </p>
   </div>
-
-  <div class="sticker-grid">
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/01/&size=200&margin=2" alt="QR 01">
-      </div>
-      <div class="sticker-number">#01</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/02/&size=200&margin=2" alt="QR 02">
-      </div>
-      <div class="sticker-number">#02</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/03/&size=200&margin=2" alt="QR 03">
-      </div>
-      <div class="sticker-number">#03</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/04/&size=200&margin=2" alt="QR 04">
-      </div>
-      <div class="sticker-number">#04</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/05/&size=200&margin=2" alt="QR 05">
-      </div>
-      <div class="sticker-number">#05</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/06/&size=200&margin=2" alt="QR 06">
-      </div>
-      <div class="sticker-number">#06</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/07/&size=200&margin=2" alt="QR 07">
-      </div>
-      <div class="sticker-number">#07</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/08/&size=200&margin=2" alt="QR 08">
-      </div>
-      <div class="sticker-number">#08</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/09/&size=200&margin=2" alt="QR 09">
-      </div>
-      <div class="sticker-number">#09</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/10/&size=200&margin=2" alt="QR 10">
-      </div>
-      <div class="sticker-number">#10</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/11/&size=200&margin=2" alt="QR 11">
-      </div>
-      <div class="sticker-number">#11</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/12/&size=200&margin=2" alt="QR 12">
-      </div>
-      <div class="sticker-number">#12</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/13/&size=200&margin=2" alt="QR 13">
-      </div>
-      <div class="sticker-number">#13</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/14/&size=200&margin=2" alt="QR 14">
-      </div>
-      <div class="sticker-number">#14</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/15/&size=200&margin=2" alt="QR 15">
-      </div>
-      <div class="sticker-number">#15</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/16/&size=200&margin=2" alt="QR 16">
-      </div>
-      <div class="sticker-number">#16</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/17/&size=200&margin=2" alt="QR 17">
-      </div>
-      <div class="sticker-number">#17</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/18/&size=200&margin=2" alt="QR 18">
-      </div>
-      <div class="sticker-number">#18</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/19/&size=200&margin=2" alt="QR 19">
-      </div>
-      <div class="sticker-number">#19</div>
-    </div>
-    <div class="sticker">
-      <div class="qr-container">
-        <img src="https://quickchart.io/qr?text=https://example-github-pages-url.com/surprises/20/&size=200&margin=2" alt="QR 20">
-      </div>
-      <div class="sticker-number">#20</div>
-    </div>
-  </div>
-
 </body>
 </html>

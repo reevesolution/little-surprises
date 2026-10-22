@@ -9,6 +9,10 @@ def generate_printable_sticker_sheet(base_url="https://username.github.io/little
     4 columns x 5 rows grid (20 stickers total).
     Each QR sticker contains a ~1.5 inch square QR code and sticker number (01-20). No descriptions on stickers.
     """
+    from urllib.parse import urlparse
+    parsed = urlparse(base_url)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.hostname in {"username.github.io", "example-github-pages-url.com", "localhost", "127.0.0.1"}:
+        raise SystemExit("Refusing to generate printable stickers without a real HTTPS deployment URL.")
     if not base_url.endswith('/'):
         base_url += '/'
 
@@ -16,6 +20,8 @@ def generate_printable_sticker_sheet(base_url="https://username.github.io/little
         data = json.load(f)
 
     manifest = data.get("manifest", [])
+    if len(manifest) != 20 or any(item.get("implementation_status") != "verified" for item in manifest):
+        raise SystemExit("Refusing to generate stickers: all 20 approved surprises must be verified first.")
 
     html_content = f"""<!DOCTYPE html>
 <html lang="en">

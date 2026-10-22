@@ -4,6 +4,12 @@ import os
 import sys
 import re
 
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 def test_site():
     print("Running automated site verification checks...")
     errors = []
@@ -14,11 +20,18 @@ def test_site():
         errors.append("surprises.json manifest missing!")
     else:
         try:
-            with open(manifest_path, "r") as f:
+            with open(manifest_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             manifest = data.get("manifest", [])
             if len(manifest) != 20:
                 errors.append(f"Manifest entry count mismatch! Expected 20, got {len(manifest)}")
+            expected = [f"{i:02d}" for i in range(1, 21)]
+            actual = [entry.get("sticker_number") for entry in manifest]
+            if actual != expected:
+                errors.append("Manifest sticker numbers must be exactly 01 through 20 in order")
+            for entry in manifest:
+                if entry.get("implementation_status") != "verified":
+                    errors.append(f"Surprise {entry.get('sticker_number')} not verified against approved content")
         except Exception as e:
             errors.append(f"Invalid surprises.json format: {e}")
 
@@ -42,7 +55,7 @@ def test_site():
         errors.append("assets/css/style.css missing!")
 
     # Check USDZ AR models
-    for model in ["iloveyou.usdz", "heart.usdz"]:
+    for model in ["iloveyou.usdz", "heart.usdz", "ufo.usdz"]:
         m_path = f"assets/models/{model}"
         if not os.path.exists(m_path):
             errors.append(f"AR asset missing: {m_path}")
@@ -53,7 +66,7 @@ def test_site():
             print(f" - {err}")
         sys.exit(1)
     else:
-        print("\n✅ ALL SITE VERIFICATION CHECKS PASSED SUCCESSFULLY!")
+        print("\n✅ MANIFEST, CONTENT GATES AND SITE STRUCTURE PASSED!")
 
 if __name__ == "__main__":
     test_site()
