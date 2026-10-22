@@ -1,377 +1,233 @@
 #!/usr/bin/env python3
 """
-Generates authentic Apple Quick Look-compatible USDZ 3D models for Little Surprises:
-1. assets/models/iloveyou.usdz - Playful colorful 3D 'I LOVE YOU' with decorative hearts
-2. assets/models/heart.usdz    - Translucent pink crystal/gemstone heart
-3. assets/models/ufo.usdz      - Cute colorful UFO with glowing cockpit, tractor beam & heart
+Generates the Little Surprises AR models (USDZ for Apple AR Quick Look):
+
+  assets/models/iloveyou.usdz  - #01 colorful 3D "I LOVE YOU" block letters with gem hearts
+  assets/models/heart.usdz     - #11 translucent pink faceted crystal heart
+  assets/models/ufo.usdz       - #15 cute UFO with tractor beam and projected heart
+
+Geometry rules (checked by scripts/test_usdz_assets.py):
+  * every solid is a closed, outward-facing (right-handed) manifold with positive volume
+  * hard-edged meshes use subdivisionScheme = "none" and carry authored extents
+  * materials are bound with the MaterialBindingAPI applied
+  * translucent meshes are double sided
+The generator is deterministic. Output is NOT a substitute for testing on a real iPhone.
 """
 
 import math
-import os
 import struct
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 MODELS_DIR = ROOT / "assets" / "models"
-MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# ==============================================================================
-# Helper functions for 3D Geometry Generation
-# ==============================================================================
+# ----------------------------------------------------------------------------
+# Mesh construction
+# ----------------------------------------------------------------------------
 
-def create_box(x_min, x_max, y_min, y_max, z_min, z_max):
-    """Returns (points, indices, counts, normals) for an axis-aligned box."""
-    pts = [
-        (x_min, y_min, z_max), (x_max, y_min, z_max), (x_max, y_max, z_max), (x_min, y_max, z_max), # Front
-        (x_max, y_min, z_min), (x_min, y_min, z_min), (x_min, y_max, z_min), (x_max, y_max, z_min), # Back
-        (x_min, y_max, z_max), (x_max, y_max, z_max), (x_max, y_max, z_min), (x_min, y_max, z_min), # Top
-        (x_min, y_min, z_min), (x_max, y_min, z_min), (x_max, y_min, z_max), (x_min, y_min, z_max), # Bottom
-        (x_max, y_min, z_max), (x_max, y_min, z_min), (x_max, y_max, z_min), (x_max, y_max, z_max), # Right
-        (x_min, y_min, z_min), (x_min, y_min, z_max), (x_min, y_max, z_max), (x_min, y_max, z_min), # Left
-    ]
-    indices = list(range(24))
-    counts = [4] * 6
-    normals = [
-        (0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1),
-        (0, 0, -1), (0, 0, -1), (0, 0, -1), (0, 0, -1),
-        (0, 1, 0), (0, 1, 0), (0, 1, 0), (0, 1, 0),
-        (0, -1, 0), (0, -1, 0), (0, -1, 0), (0, -1, 0),
-        (1, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0),
-        (-1, 0, 0), (-1, 0, 0), (-1, 0, 0), (-1, 0, 0),
-    ]
-    return pts, indices, counts, normals
+def _sub(a, b):
+    return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
 
 
-def create_uv_sphere(radius, lat_steps=16, lon_steps=24, center=(0, 0, 0)):
-    """Creates a UV sphere."""
+def _newell_normal(verts):
+    """Unit normal of a (possibly non-triangular) polygon from CCW vertex order."""
+    nx = ny = nz = 0.0
+    for i, p in enumerate(verts):
+        q = verts[(i + 1) % len(verts)]
+        nx += (p[1] - q[1]) * (p[2] + q[2])
+        ny += (p[2] - q[2]) * (p[0] + q[0])
+        nz += (p[0] - q[0]) * (p[1] + q[1])
+    mag = math.sqrt(nx * nx + ny * ny + nz * nz)
+    if mag < 1e-14:
+        return (0.0, 1.0, 0.0)
+    return (nx / mag, ny / mag, nz / mag)
+
+
+class Mesh:
+    """Face-vertex mesh; vertices are never shared between faces, so normals
+    are explicit per face-vertex ("vertex" interpolation == one per point)."""
+
+    def __init__(self):
+        self.points, self.normals, self.counts, self.indices = [], [], [], []
+
+    def add_face(self, verts, normals=None):
+        if normals is None:
+            n = _newell_normal(verts)
+            normals = [n] * len(verts)
+        base = len(self.points)
+        self.points.extend(verts)
+        self.normals.extend(normals)
+        self.counts.append(len(verts))
+        self.indices.extend(range(base, base + len(verts)))
+
+    def extent(self):
+        xs, ys, zs = zip(*self.points)
+        return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
+
+
+def box(cx, cy, cz, w, h, d, rot_z_deg=0.0):
+    """Closed box, optionally rotated about its own centre around Z."""
+    m = Mesh()
+    a = math.radians(rot_z_deg)
+    ca, sa = math.cos(a), math.sin(a)
+
+    def P(x, y, z):
+        return (cx + x * ca - y * sa, cy + x * sa + y * ca, cz + z)
+
+    x0, x1, y0, y1, z0, z1 = -w / 2, w / 2, -h / 2, h / 2, -d / 2, d / 2
+    m.add_face([P(x0, y0, z1), P(x1, y0, z1), P(x1, y1, z1), P(x0, y1, z1)])  # front  +z
+    m.add_face([P(x1, y0, z0), P(x0, y0, z0), P(x0, y1, z0), P(x1, y1, z0)])  # back   -z
+    m.add_face([P(x0, y1, z1), P(x1, y1, z1), P(x1, y1, z0), P(x0, y1, z0)])  # top    +y
+    m.add_face([P(x0, y0, z0), P(x1, y0, z0), P(x1, y0, z1), P(x0, y0, z1)])  # bottom -y
+    m.add_face([P(x1, y0, z1), P(x1, y0, z0), P(x1, y1, z0), P(x1, y1, z1)])  # right  +x
+    m.add_face([P(x0, y0, z0), P(x0, y0, z1), P(x0, y1, z1), P(x0, y1, z0)])  # left   -x
+    return m
+
+
+def _flat_segments(profile):
+    """Profile (r, y) polyline bottom->top to lathe segments with hard (per-segment) normals."""
+    segs = []
+    for (r0, y0), (r1, y1) in zip(profile, profile[1:]):
+        dr, dy = r1 - r0, y1 - y0
+        ln = math.hypot(dr, dy)
+        n = (dy / ln, -dr / ln)
+        segs.append(((r0, y0, n), (r1, y1, n)))
+    return segs
+
+
+def _arc_segments(radius, y_center, t0_deg, t1_deg, steps):
+    """Smooth-shaded circular arc in the (r, y) half plane (spheres / domes)."""
+    segs = []
+    for i in range(steps):
+        ta = math.radians(t0_deg + (t1_deg - t0_deg) * i / steps)
+        tb = math.radians(t0_deg + (t1_deg - t0_deg) * (i + 1) / steps)
+        pa = (radius * math.cos(ta), y_center + radius * math.sin(ta), (math.cos(ta), math.sin(ta)))
+        pb = (radius * math.cos(tb), y_center + radius * math.sin(tb), (math.cos(tb), math.sin(tb)))
+        segs.append((pa, pb))
+    return segs
+
+
+def lathe(segments, steps=32, center=(0.0, 0.0, 0.0)):
+    """Surface of revolution about +Y. Profile runs bottom->top with r >= 0 so that
+    quads wound (A, D, C, B) face outward. Degenerate (pole) quads collapse to triangles."""
+    m = Mesh()
     cx, cy, cz = center
+    for (r0, y0, n0), (r1, y1, n1) in segments:
+        for j in range(steps):
+            a0, a1 = 2 * math.pi * j / steps, 2 * math.pi * (j + 1) / steps
+
+            def V(r, y, n, a):
+                return ((cx + r * math.cos(a), cy + y, cz + r * math.sin(a)),
+                        (n[0] * math.cos(a), n[1], n[0] * math.sin(a)))
+
+            quad = [V(r0, y0, n0, a0), V(r1, y1, n1, a0), V(r1, y1, n1, a1), V(r0, y0, n0, a1)]  # A, D, C, B
+            kept = []
+            for v in quad:
+                if not kept or math.dist(kept[-1][0], v[0]) > 1e-9:
+                    kept.append(v)
+            if len(kept) > 1 and math.dist(kept[-1][0], kept[0][0]) <= 1e-9:
+                kept.pop()
+            if len(kept) >= 3:
+                m.add_face([v[0] for v in kept], [v[1] for v in kept])
+    return m
+
+
+def sphere(radius, center, lat_steps=10, lon_steps=18):
+    return lathe(_arc_segments(radius, 0.0, -90, 90, lat_steps), lon_steps, center)
+
+
+def dome(radius, center, lat_steps=8, lon_steps=24):
+    """Upper hemisphere with a flat bottom cap (closed solid)."""
+    segs = [((0.0, 0.0, (0.0, -1.0)), (radius, 0.0, (0.0, -1.0)))]
+    segs += _arc_segments(radius, 0.0, 0, 90, lat_steps)
+    return lathe(segs, lon_steps, center)
+
+
+def cylinder(radius, y0, y1, center, steps=16):
+    return lathe(_flat_segments([(0.0, y0), (radius, y0), (radius, y1), (0.0, y1)]), steps, center)
+
+
+def heart_outline(n):
+    """Classic heart curve, returned CCW (viewed from +z), centred on mean y, in units of 1/16 half-width."""
     pts = []
-    normals = []
-    for i in range(lat_steps + 1):
-        lat = math.pi * (-0.5 + float(i) / lat_steps)
-        sin_lat = math.sin(lat)
-        cos_lat = math.cos(lat)
-        for j in range(lon_steps + 1):
-            lon = 2 * math.pi * float(j) / lon_steps
-            sin_lon = math.sin(lon)
-            cos_lon = math.cos(lon)
-            nx = cos_lat * cos_lon
-            ny = sin_lat
-            nz = cos_lat * sin_lon
-            pts.append((cx + radius * nx, cy + radius * ny, cz + radius * nz))
-            normals.append((nx, ny, nz))
-
-    indices = []
-    counts = []
-    for i in range(lat_steps):
-        for j in range(lon_steps):
-            first = i * (lon_steps + 1) + j
-            second = first + lon_steps + 1
-            # Triangle 1
-            indices.extend([first, second, first + 1])
-            counts.append(3)
-            # Triangle 2
-            indices.extend([second, second + 1, first + 1])
-            counts.append(3)
-
-    return pts, indices, counts, normals
+    for k in range(n):
+        u = -math.pi + 2 * math.pi * k / n
+        pts.append((16 * math.sin(u) ** 3,
+                    13 * math.cos(u) - 5 * math.cos(2 * u) - 2 * math.cos(3 * u) - math.cos(4 * u)))
+    cy = sum(p[1] for p in pts) / n
+    pts = [(x, y - cy) for x, y in pts]
+    area = sum(pts[i][0] * pts[(i + 1) % n][1] - pts[(i + 1) % n][0] * pts[i][1] for i in range(n)) / 2
+    if area < 0:
+        pts.reverse()
+    return pts
 
 
-def create_faceted_heart_mesh(scale=0.15, center=(0, 0, 0)):
-    """
-    Creates a beautiful faceted 3D gemstone heart model.
-    A multi-faceted cut crystal heart with crisp facet normals.
-    """
+def heart_gem(width, depth, center, n=40, layers=((1.0, 0.0), (0.74, 0.55), (0.42, 0.88))):
+    """Closed, faceted, flat-shaded gemstone heart (girdle at z=0, table apex at +/-depth)."""
+    m = Mesh()
     cx, cy, cz = center
-    # Key crystal vertices
-    # Front center cleft, top lobes, outer flanks, bottom point, back symmetry
-    # We construct a parametric 3D heart with faceted subdivision
-    u_steps = 28
-    v_steps = 14
-    pts = []
-    normals = []
-    indices = []
-    counts = []
-
-    def heart_func(u, v):
-        # u in [-pi, pi], v in [-pi/2, pi/2]
-        # 3D cardioid formula with crystal thickness
-        sin_u = math.sin(u)
-        cos_u = math.cos(u)
-        sin_v = math.sin(v)
-        cos_v = math.cos(v)
-
-        # 2D heart profile in X-Y
-        hx = 16 * (sin_u ** 3)
-        hy = 13 * cos_u - 5 * math.cos(2 * u) - 2 * math.cos(3 * u) - math.cos(4 * u)
-        # Z thickness shaped by v and cardioid profile
-        hz = 8 * sin_v * (1.0 - 0.2 * abs(sin_u))
-
-        # Normalize and scale
-        s = scale / 17.0
-        return (cx + hx * s, cy + (hy + 2.0) * s, cz + hz * s)
-
-    # Build vertex grid
-    grid = []
-    for iv in range(v_steps + 1):
-        v = -math.pi / 2 + math.pi * (iv / v_steps)
-        row = []
-        for iu in range(u_steps):
-            u = -math.pi + 2 * math.pi * (iu / u_steps)
-            pt = heart_func(u, v)
-            row.append(len(pts))
-            pts.append(pt)
-        grid.append(row)
-
-    # Create quads/triangles
-    for iv in range(v_steps):
-        for iu in range(u_steps):
-            iu_next = (iu + 1) % u_steps
-            p00 = grid[iv][iu]
-            p01 = grid[iv][iu_next]
-            p10 = grid[iv + 1][iu]
-            p11 = grid[iv + 1][iu_next]
-
-            # Triangle 1: p00, p10, p01
-            indices.extend([p00, p10, p01])
-            counts.append(3)
-            # Triangle 2: p01, p10, p11
-            indices.extend([p01, p10, p11])
-            counts.append(3)
-
-    # Compute flat/facet normals for crystal look
-    # For Apple USD Quick Look, calculating per-vertex averaged normals or facet normals:
-    v_normals = [[0.0, 0.0, 0.0] for _ in pts]
-    idx = 0
-    for c in counts:
-        tri = indices[idx:idx + c]
-        idx += c
-        p0 = pts[tri[0]]
-        p1 = pts[tri[1]]
-        p2 = pts[tri[2]]
-        # Cross product (p1 - p0) x (p2 - p0)
-        ux, uy, uz = p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]
-        vx, vy, vz = p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]
-        nx = uy * vz - uz * vy
-        ny = uz * vx - ux * vz
-        nz = ux * vy - uy * vx
-        mag = math.sqrt(nx * nx + ny * ny + nz * nz)
-        if mag > 1e-8:
-            nx /= mag
-            ny /= mag
-            nz /= mag
-            for v_idx in tri:
-                v_normals[v_idx][0] += nx
-                v_normals[v_idx][1] += ny
-                v_normals[v_idx][2] += nz
-
-    for n in v_normals:
-        mag = math.sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2])
-        if mag > 1e-8:
-            normals.append((n[0] / mag, n[1] / mag, n[2] / mag))
-        else:
-            normals.append((0.0, 1.0, 0.0))
-
-    return pts, indices, counts, normals
+    s = width / 32.0
+    outline = heart_outline(n)
+    rings = [[(cx + sc * x * s, cy + sc * y * s, cz + zf * depth) for x, y in outline] for sc, zf in layers]
+    apex_front = (cx, cy, cz + depth)
+    tris = []
+    for lo, li in zip(rings, rings[1:]):
+        for k in range(n):
+            k2 = (k + 1) % n
+            tris.append([lo[k], lo[k2], li[k2]])
+            tris.append([lo[k], li[k2], li[k]])
+    last = rings[-1]
+    for k in range(n):
+        tris.append([last[k], last[(k + 1) % n], apex_front])
+    for t in tris:  # front half
+        m.add_face(t)
+    for t in tris:  # back half: mirror through z = cz and reverse winding
+        mirrored = [(p[0], p[1], 2 * cz - p[2]) for p in reversed(t)]
+        m.add_face(mirrored)
+    return m
 
 
-def create_extruded_polygon(points_2d, z_depth=0.04, center=(0, 0, 0)):
-    """
-    Extrudes a simple 2D polygon along Z axis with front, back, and side quads.
-    """
-    cx, cy, cz = center
-    n = len(points_2d)
-    pts = []
-    normals = []
-    indices = []
-    counts = []
+# ----------------------------------------------------------------------------
+# USDA serialisation
+# ----------------------------------------------------------------------------
 
-    half_z = z_depth / 2.0
-    # Front vertices (z = +half_z)
-    for x, y in points_2d:
-        pts.append((cx + x, cy + y, cz + half_z))
-    # Back vertices (z = -half_z)
-    for x, y in points_2d:
-        pts.append((cx + x, cy + y, cz - half_z))
-
-    # Fan triangulation for front face (assuming roughly star-convex or simple)
-    # Using center vertex for robust triangulation
-    front_center_idx = len(pts)
-    pts.append((cx + sum(p[0] for p in points_2d) / n, cy + sum(p[1] for p in points_2d) / n, cz + half_z))
-    for i in range(n):
-        i_next = (i + 1) % n
-        indices.extend([front_center_idx, i, i_next])
-        counts.append(3)
-
-    back_center_idx = len(pts)
-    pts.append((cx + sum(p[0] for p in points_2d) / n, cy + sum(p[1] for p in points_2d) / n, cz - half_z))
-    for i in range(n):
-        i_next = (i + 1) % n
-        indices.extend([back_center_idx, i_next, i])
-        counts.append(3)
-
-    # Side walls
-    for i in range(n):
-        i_next = (i + 1) % n
-        f0 = i
-        f1 = i_next
-        b0 = n + i
-        b1 = n + i_next
-        indices.extend([f0, f1, b1, b0])
-        counts.append(4)
-
-    # Compute normals
-    v_normals = [[0.0, 0.0, 0.0] for _ in pts]
-    idx = 0
-    for c in counts:
-        face = indices[idx:idx + c]
-        idx += c
-        p0 = pts[face[0]]
-        p1 = pts[face[1]]
-        p2 = pts[face[2]]
-        ux, uy, uz = p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]
-        vx, vy, vz = p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]
-        nx = uy * vz - uz * vy
-        ny = uz * vx - ux * vz
-        nz = ux * vy - uy * vx
-        mag = math.sqrt(nx * nx + ny * ny + nz * nz)
-        if mag > 1e-8:
-            nx /= mag
-            ny /= mag
-            nz /= mag
-            for v_idx in face:
-                v_normals[v_idx][0] += nx
-                v_normals[v_idx][1] += ny
-                v_normals[v_idx][2] += nz
-
-    for n_vec in v_normals:
-        mag = math.sqrt(n_vec[0] * n_vec[0] + n_vec[1] * n_vec[1] + n_vec[2] * n_vec[2])
-        if mag > 1e-8:
-            normals.append((n_vec[0] / mag, n_vec[1] / mag, n_vec[2] / mag))
-        else:
-            normals.append((0.0, 0.0, 1.0))
-
-    return pts, indices, counts, normals
+def _vec(t):
+    return "(" + ", ".join(f"{c:.6f}" for c in t) + ")"
 
 
-def create_cylinder(radius_top, radius_bottom, height, radial_steps=24, center=(0, 0, 0)):
-    """Creates a cylinder/cone with top and bottom caps."""
-    cx, cy, cz = center
-    half_h = height / 2.0
-    pts = []
-    normals = []
-    indices = []
-    counts = []
-
-    # Top ring
-    top_indices = []
-    for j in range(radial_steps):
-        angle = 2 * math.pi * j / radial_steps
-        pts.append((cx + radius_top * math.cos(angle), cy + half_h, cz + radius_top * math.sin(angle)))
-        top_indices.append(len(pts) - 1)
-
-    # Bottom ring
-    bottom_indices = []
-    for j in range(radial_steps):
-        angle = 2 * math.pi * j / radial_steps
-        pts.append((cx + radius_bottom * math.cos(angle), cy - half_h, cz + radius_bottom * math.sin(angle)))
-        bottom_indices.append(len(pts) - 1)
-
-    # Top center
-    top_center = len(pts)
-    pts.append((cx, cy + half_h, cz))
-    # Bottom center
-    bottom_center = len(pts)
-    pts.append((cx, cy - half_h, cz))
-
-    # Top cap
-    for j in range(radial_steps):
-        j_next = (j + 1) % radial_steps
-        indices.extend([top_center, top_indices[j], top_indices[j_next]])
-        counts.append(3)
-
-    # Bottom cap
-    for j in range(radial_steps):
-        j_next = (j + 1) % radial_steps
-        indices.extend([bottom_center, bottom_indices[j_next], bottom_indices[j]])
-        counts.append(3)
-
-    # Side quads
-    for j in range(radial_steps):
-        j_next = (j + 1) % radial_steps
-        t0 = top_indices[j]
-        t1 = top_indices[j_next]
-        b0 = bottom_indices[j]
-        b1 = bottom_indices[j_next]
-        indices.extend([t0, t1, b1, b0])
-        counts.append(4)
-
-    # Normals
-    v_normals = [[0.0, 0.0, 0.0] for _ in pts]
-    idx = 0
-    for c in counts:
-        face = indices[idx:idx + c]
-        idx += c
-        p0 = pts[face[0]]
-        p1 = pts[face[1]]
-        p2 = pts[face[2]]
-        ux, uy, uz = p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]
-        vx, vy, vz = p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2]
-        nx = uy * vz - uz * vy
-        ny = uz * vx - ux * vz
-        nz = ux * vy - uy * vx
-        mag = math.sqrt(nx * nx + ny * ny + nz * nz)
-        if mag > 1e-8:
-            nx /= mag
-            ny /= mag
-            nz /= mag
-            for v_idx in face:
-                v_normals[v_idx][0] += nx
-                v_normals[v_idx][1] += ny
-                v_normals[v_idx][2] += nz
-
-    for n_vec in v_normals:
-        mag = math.sqrt(n_vec[0] * n_vec[0] + n_vec[1] * n_vec[1] + n_vec[2] * n_vec[2])
-        if mag > 1e-8:
-            normals.append((n_vec[0] / mag, n_vec[1] / mag, n_vec[2] / mag))
-        else:
-            normals.append((0.0, 1.0, 0.0))
-
-    return pts, indices, counts, normals
-
-
-# ==============================================================================
-# USD USDA Serialization
-# ==============================================================================
-
-def format_usda_mesh(name, pts, indices, counts, normals, material_path, display_color):
-    """Formats a Mesh definition in USDA format."""
-    pts_str = ", ".join(f"({p[0]:.4f}, {p[1]:.4f}, {p[2]:.4f})" for p in pts)
-    idx_str = ", ".join(str(i) for i in indices)
-    cnt_str = ", ".join(str(c) for c in counts)
-    nrm_str = ", ".join(f"({n[0]:.4f}, {n[1]:.4f}, {n[2]:.4f})" for n in normals)
-    col_str = f"({display_color[0]:.2f}, {display_color[1]:.2f}, {display_color[2]:.2f})"
-
-    return f"""
-    def Mesh "{name}"
-    {{
-        int[] faceVertexCounts = [{cnt_str}]
-        int[] faceVertexIndices = [{idx_str}]
-        point3f[] points = [{pts_str}]
-        normal3f[] normals = [{nrm_str}] (
-            interpolation = "vertex"
+def format_mesh(name, mesh, material, color, double_sided=False):
+    lo, hi = mesh.extent()
+    pts = ", ".join(_vec(p) for p in mesh.points)
+    nrm = ", ".join(_vec(n) for n in mesh.normals)
+    idx = ", ".join(str(i) for i in mesh.indices)
+    cnt = ", ".join(str(c) for c in mesh.counts)
+    return f'''
+        def Mesh "{name}" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
         )
-        color3f[] primvars:displayColor = [{col_str}]
-        rel material:binding = <{material_path}>
-    }}"""
+        {{
+            float3[] extent = [{_vec(lo)}, {_vec(hi)}]
+            int[] faceVertexCounts = [{cnt}]
+            int[] faceVertexIndices = [{idx}]
+            point3f[] points = [{pts}]
+            normal3f[] normals = [{nrm}] (
+                interpolation = "vertex"
+            )
+            color3f[] primvars:displayColor = [{_vec(color)}] (
+                interpolation = "constant"
+            )
+            uniform token orientation = "rightHanded"
+            uniform bool doubleSided = {"true" if double_sided else "false"}
+            uniform token subdivisionScheme = "none"
+            rel material:binding = </Root/Materials/{material}>
+        }}'''
 
 
-def format_material(name, diff_color, roughness=0.3, metallic=0.0, opacity=1.0, ior=1.5):
-    """Formats a UsdPreviewSurface material in USDA."""
-    diff_str = f"({diff_color[0]:.3f}, {diff_color[1]:.3f}, {diff_color[2]:.3f})"
-    return f"""
+def format_material(name, diffuse, roughness=0.3, metallic=0.0, opacity=1.0, ior=1.5, emissive=None):
+    emit = f"\n                color3f inputs:emissiveColor = {_vec(emissive)}" if emissive else ""
+    return f'''
         def Material "{name}"
         {{
             token outputs:surface.connect = </Root/Materials/{name}/PBRPreview.outputs:surface>
@@ -379,14 +235,37 @@ def format_material(name, diff_color, roughness=0.3, metallic=0.0, opacity=1.0, 
             def Shader "PBRPreview"
             {{
                 uniform token info:id = "UsdPreviewSurface"
-                color3f inputs:diffuseColor = {diff_str}
+                color3f inputs:diffuseColor = {_vec(diffuse)}{emit}
                 float inputs:roughness = {roughness:.2f}
                 float inputs:metallic = {metallic:.2f}
                 float inputs:opacity = {opacity:.2f}
                 float inputs:ior = {ior:.2f}
                 token outputs:surface
             }}
-        }}"""
+        }}'''
+
+
+def usda_document(group_name, materials, meshes):
+    return f'''#usda 1.0
+(
+    defaultPrim = "Root"
+    metersPerUnit = 1.0
+    upAxis = "Y"
+)
+
+def Xform "Root" (
+    kind = "component"
+)
+{{
+    def Scope "Materials"
+    {{{"".join(materials)}
+    }}
+
+    def Xform "{group_name}"
+    {{{"".join(meshes)}
+    }}
+}}
+'''
 
 
 def package_usdz(usda_content, output_usdz_path):
@@ -403,249 +282,108 @@ def package_usdz(usda_content, output_usdz_path):
     with zipfile.ZipFile(output_usdz_path, "w", compression=zipfile.ZIP_STORED) as zf:
         zf.writestr(info, usda_content.encode("utf-8"))
 
-# ==============================================================================
-# 1. Model: I LOVE YOU in AR (iloveyou.usdz)
-# ==============================================================================
+
+# ----------------------------------------------------------------------------
+# Models
+# ----------------------------------------------------------------------------
+
+GOLD, PINK, PURPLE, CORAL = (1.0, 0.78, 0.25), (0.95, 0.22, 0.48), (0.68, 0.28, 0.88), (0.98, 0.42, 0.36)
+
 
 def build_iloveyou_model():
-    print("Building iloveyou.usdz...")
-    # Letter 3D boxes/strokes for "I", "LOVE", "YOU"
-    # Layout:
-    # Row 1: I (with two cute hearts)
-    # Row 2: L O V E
-    # Row 3: Y O U
+    mats = {
+        "PinkMat": (PINK, 0.25, 0.1), "GoldMat": (GOLD, 0.2, 0.3),
+        "PurpleMat": (PURPLE, 0.25, 0.1), "CoralMat": (CORAL, 0.25, 0.1),
+    }
+    materials = [format_material(k, c, r, mt) for k, (c, r, mt) in mats.items()]
     meshes = []
-    materials = []
 
-    # Material definitions
-    materials.append(format_material("PinkMat", (0.95, 0.22, 0.48), roughness=0.25, metallic=0.1))
-    materials.append(format_material("GoldMat", (1.0, 0.78, 0.25), roughness=0.2, metallic=0.3))
-    materials.append(format_material("PurpleMat", (0.68, 0.28, 0.88), roughness=0.25, metallic=0.1))
-    materials.append(format_material("CoralMat", (0.98, 0.42, 0.36), roughness=0.25, metallic=0.1))
+    def add(name, mesh, mat, double_sided=False):
+        meshes.append(format_mesh(name, mesh, mat, mats[mat][0], double_sided))
 
-    # Stroke helper
-    def add_box(name, x, y, z, w, h, d, mat, color):
-        pts, idx, cnt, nrm = create_box(x - w/2, x + w/2, y - h/2, y + h/2, z - d/2, z + d/2)
-        meshes.append(format_usda_mesh(name, pts, idx, cnt, nrm, f"/Root/Materials/{mat}", color))
+    T = 0.03  # letter depth
+    # Row 1: "I" flanked by two hearts
+    add("I_bar", box(0.0, 0.18, 0, 0.025, 0.09, T), "GoldMat")
+    add("I_top", box(0.0, 0.22, 0, 0.065, 0.02, T), "GoldMat")
+    add("I_bot", box(0.0, 0.14, 0, 0.065, 0.02, T), "GoldMat")
+    add("HeartLeft", heart_gem(0.12, 0.03, (-0.14, 0.18, 0.0)), "PinkMat")
+    add("HeartRight", heart_gem(0.12, 0.03, (0.14, 0.18, 0.0)), "PinkMat")
+    # Row 2: L O V E
+    add("L_vert", box(-0.16, 0.06, 0, 0.022, 0.09, T), "CoralMat")
+    add("L_horiz", box(-0.136, 0.02, 0, 0.05, 0.022, T), "CoralMat")
+    add("O_left", box(-0.079, 0.06, 0, 0.02, 0.09, T), "PinkMat")
+    add("O_right", box(-0.031, 0.06, 0, 0.02, 0.09, T), "PinkMat")
+    add("O_top", box(-0.055, 0.095, 0, 0.065, 0.02, T), "PinkMat")
+    add("O_bot", box(-0.055, 0.025, 0, 0.065, 0.02, T), "PinkMat")
+    ang = math.degrees(math.atan2(0.03, 0.087))  # diagonal strokes so V does not read as U
+    ln = math.hypot(0.03, 0.087)
+    add("V_left", box(0.04, 0.0615, 0, 0.02, ln, T, +ang), "PurpleMat")
+    add("V_right", box(0.07, 0.0615, 0, 0.02, ln, T, -ang), "PurpleMat")
+    add("E_vert", box(0.14, 0.06, 0, 0.022, 0.09, T), "CoralMat")
+    add("E_top", box(0.17, 0.095, 0, 0.055, 0.02, T), "CoralMat")
+    add("E_mid", box(0.165, 0.06, 0, 0.045, 0.018, T), "CoralMat")
+    add("E_bot", box(0.17, 0.025, 0, 0.055, 0.02, T), "CoralMat")
+    # Row 3: Y O U with hearts at both ends
+    yang = math.degrees(math.atan2(0.035, 0.045))
+    yln = math.hypot(0.035, 0.045)
+    add("Y_stem", box(-0.11, -0.09, 0, 0.022, 0.05, T), "PurpleMat")
+    add("Y_left", box(-0.1275, -0.0425, 0, 0.02, yln, T, +yang), "PurpleMat")
+    add("Y_right", box(-0.0925, -0.0425, 0, 0.02, yln, T, -yang), "PurpleMat")
+    add("Y_O_left", box(-0.024, -0.06, 0, 0.02, 0.09, T), "GoldMat")
+    add("Y_O_right", box(0.024, -0.06, 0, 0.02, 0.09, T), "GoldMat")
+    add("Y_O_top", box(0.0, -0.025, 0, 0.065, 0.02, T), "GoldMat")
+    add("Y_O_bot", box(0.0, -0.095, 0, 0.065, 0.02, T), "GoldMat")
+    add("U_left", box(0.086, -0.05, 0, 0.02, 0.075, T), "PinkMat")
+    add("U_right", box(0.134, -0.05, 0, 0.02, 0.075, T), "PinkMat")
+    add("U_bot", box(0.11, -0.095, 0, 0.065, 0.022, T), "PinkMat")
+    add("HeartFarLeft", heart_gem(0.10, 0.025, (-0.225, -0.06, 0.0)), "PinkMat")
+    add("HeartFarRight", heart_gem(0.10, 0.025, (0.225, -0.06, 0.0)), "PinkMat")
+    package_usdz(usda_document("Letters", materials, meshes), MODELS_DIR / "iloveyou.usdz")
 
-    # Row 1 (y = 0.18): "I" + 2 floating hearts
-    # Letter "I"
-    add_box("I_bar", 0.0, 0.18, 0.0, 0.025, 0.09, 0.03, "GoldMat", (1.0, 0.78, 0.25))
-    add_box("I_top", 0.0, 0.22, 0.0, 0.065, 0.02, 0.03, "GoldMat", (1.0, 0.78, 0.25))
-    add_box("I_bot", 0.0, 0.14, 0.0, 0.065, 0.02, 0.03, "GoldMat", (1.0, 0.78, 0.25))
-
-    # Flanking 3D hearts for Row 1
-    h1_pts, h1_idx, h1_cnt, h1_nrm = create_faceted_heart_mesh(scale=0.065, center=(-0.14, 0.18, 0.01))
-    meshes.append(format_usda_mesh("HeartLeft", h1_pts, h1_idx, h1_cnt, h1_nrm, "/Root/Materials/PinkMat", (0.95, 0.22, 0.48)))
-    h2_pts, h2_idx, h2_cnt, h2_nrm = create_faceted_heart_mesh(scale=0.065, center=(0.14, 0.18, -0.01))
-    meshes.append(format_usda_mesh("HeartRight", h2_pts, h2_idx, h2_cnt, h2_nrm, "/Root/Materials/PinkMat", (0.95, 0.22, 0.48)))
-
-    # Row 2 (y = 0.06): "L O V E"
-    # L
-    lx = -0.16
-    add_box("L_vert", lx, 0.06, 0.0, 0.022, 0.09, 0.03, "CoralMat", (0.98, 0.42, 0.36))
-    add_box("L_horiz", lx + 0.024, 0.02, 0.0, 0.05, 0.022, 0.03, "CoralMat", (0.98, 0.42, 0.36))
-
-    # O
-    ox = -0.055
-    add_box("O_left", ox - 0.024, 0.06, 0.0, 0.02, 0.09, 0.03, "PinkMat", (0.95, 0.22, 0.48))
-    add_box("O_right", ox + 0.024, 0.06, 0.0, 0.02, 0.09, 0.03, "PinkMat", (0.95, 0.22, 0.48))
-    add_box("O_top", ox, 0.095, 0.0, 0.065, 0.02, 0.03, "PinkMat", (0.95, 0.22, 0.48))
-    add_box("O_bot", ox, 0.025, 0.0, 0.065, 0.02, 0.03, "PinkMat", (0.95, 0.22, 0.48))
-
-    # V
-    vx = 0.055
-    add_box("V_left", vx - 0.018, 0.06, 0.0, 0.02, 0.09, 0.03, "PurpleMat", (0.68, 0.28, 0.88))
-    add_box("V_right", vx + 0.018, 0.06, 0.0, 0.02, 0.09, 0.03, "PurpleMat", (0.68, 0.28, 0.88))
-    add_box("V_bot", vx, 0.02, 0.0, 0.045, 0.02, 0.03, "PurpleMat", (0.68, 0.28, 0.88))
-
-    # E
-    ex = 0.16
-    add_box("E_vert", ex - 0.02, 0.06, 0.0, 0.022, 0.09, 0.03, "CoralMat", (0.98, 0.42, 0.36))
-    add_box("E_top", ex + 0.01, 0.095, 0.0, 0.055, 0.02, 0.03, "CoralMat", (0.98, 0.42, 0.36))
-    add_box("E_mid", ex + 0.005, 0.06, 0.0, 0.045, 0.018, 0.03, "CoralMat", (0.98, 0.42, 0.36))
-    add_box("E_bot", ex + 0.01, 0.025, 0.0, 0.055, 0.02, 0.03, "CoralMat", (0.98, 0.42, 0.36))
-
-    # Row 3 (y = -0.06): "Y O U"
-    # Y
-    yx = -0.11
-    add_box("Y_stem", yx, -0.09, 0.0, 0.022, 0.05, 0.03, "PurpleMat", (0.68, 0.28, 0.88))
-    add_box("Y_left", yx - 0.02, -0.045, 0.0, 0.02, 0.05, 0.03, "PurpleMat", (0.68, 0.28, 0.88))
-    add_box("Y_right", yx + 0.02, -0.045, 0.0, 0.02, 0.05, 0.03, "PurpleMat", (0.68, 0.28, 0.88))
-
-    # O
-    yox = 0.0
-    add_box("Y_O_left", yox - 0.024, -0.06, 0.0, 0.02, 0.09, 0.03, "GoldMat", (1.0, 0.78, 0.25))
-    add_box("Y_O_right", yox + 0.024, -0.06, 0.0, 0.02, 0.09, 0.03, "GoldMat", (1.0, 0.78, 0.25))
-    add_box("Y_O_top", yox, -0.025, 0.0, 0.065, 0.02, 0.03, "GoldMat", (1.0, 0.78, 0.25))
-    add_box("Y_O_bot", yox, -0.095, 0.0, 0.065, 0.02, 0.03, "GoldMat", (1.0, 0.78, 0.25))
-
-    # U
-    ux = 0.11
-    add_box("U_left", ux - 0.024, -0.05, 0.0, 0.02, 0.075, 0.03, "PinkMat", (0.95, 0.22, 0.48))
-    add_box("U_right", ux + 0.024, -0.05, 0.0, 0.02, 0.075, 0.03, "PinkMat", (0.95, 0.22, 0.48))
-    add_box("U_bot", ux, -0.095, 0.0, 0.065, 0.022, 0.03, "PinkMat", (0.95, 0.22, 0.48))
-
-    # Central crowned small heart
-    hc_pts, hc_idx, hc_cnt, hc_nrm = create_faceted_heart_mesh(scale=0.045, center=(0.0, -0.06, 0.015))
-    meshes.append(format_usda_mesh("HeartCenter", hc_pts, hc_idx, hc_cnt, hc_nrm, "/Root/Materials/PinkMat", (0.95, 0.22, 0.48)))
-
-    usda = f"""#usda 1.0
-(
-    defaultPrim = "Root"
-    metersPerUnit = 1.0
-    upAxis = "Y"
-)
-
-def Xform "Root" (
-    kind = "component"
-)
-{{
-    def Scope "Materials"
-    {{
-{"".join(materials)}
-    }}
-
-    def Xform "Letters"
-    {{
-{"".join(meshes)}
-    }}
-}}
-"""
-    package_usdz(usda, MODELS_DIR / "iloveyou.usdz")
-    print(f"Generated iloveyou.usdz ({os.path.getsize(MODELS_DIR / 'iloveyou.usdz')} bytes)")
-
-
-# ==============================================================================
-# 2. Model: Hold My Heart (heart.usdz)
-# ==============================================================================
 
 def build_heart_model():
-    print("Building heart.usdz...")
-    # Beautiful faceted translucent pink crystal heart
     materials = [
-        format_material("CrystalHeartMat", (1.0, 0.48, 0.70), roughness=0.08, metallic=0.05, opacity=0.78, ior=1.52),
-        format_material("InnerGlowMat", (1.0, 0.85, 0.95), roughness=0.15, metallic=0.0, opacity=0.90, ior=1.45)
+        format_material("CrystalHeartMat", (1.0, 0.48, 0.70), 0.08, 0.05, 0.62, 1.52, emissive=(0.12, 0.02, 0.06)),
+        format_material("InnerGlowMat", (1.0, 0.85, 0.95), 0.15, 0.0, 1.0, 1.45, emissive=(0.55, 0.25, 0.4)),
     ]
+    meshes = [
+        format_mesh("CrystalHeart", heart_gem(0.30, 0.09, (0, 0, 0)), "CrystalHeartMat", (1.0, 0.48, 0.70), True),
+        format_mesh("HeartCore", heart_gem(0.14, 0.04, (0, 0, 0)), "InnerGlowMat", (1.0, 0.85, 0.95), False),
+    ]
+    package_usdz(usda_document("HeartGeometry", materials, meshes), MODELS_DIR / "heart.usdz")
 
-    # Outer crystal heart mesh
-    pts, idx, cnt, nrm = create_faceted_heart_mesh(scale=0.22, center=(0, 0, 0))
-    mesh1 = format_usda_mesh("CrystalHeart", pts, idx, cnt, nrm, "/Root/Materials/CrystalHeartMat", (1.0, 0.48, 0.70))
-
-    # Inner glowing core
-    core_pts, core_idx, core_cnt, core_nrm = create_faceted_heart_mesh(scale=0.11, center=(0, 0, 0))
-    mesh2 = format_usda_mesh("HeartCore", core_pts, core_idx, core_cnt, core_nrm, "/Root/Materials/InnerGlowMat", (1.0, 0.85, 0.95))
-
-    usda = f"""#usda 1.0
-(
-    defaultPrim = "Root"
-    metersPerUnit = 1.0
-    upAxis = "Y"
-)
-
-def Xform "Root" (
-    kind = "component"
-)
-{{
-    def Scope "Materials"
-    {{
-{"".join(materials)}
-    }}
-
-    def Xform "HeartGeometry"
-    {{
-{mesh1}
-{mesh2}
-    }}
-}}
-"""
-    package_usdz(usda, MODELS_DIR / "heart.usdz")
-    print(f"Generated heart.usdz ({os.path.getsize(MODELS_DIR / 'heart.usdz')} bytes)")
-
-
-# ==============================================================================
-# 3. Model: Alien UFO with projected heart (ufo.usdz)
-# ==============================================================================
 
 def build_ufo_model():
-    print("Building ufo.usdz...")
-    materials = [
-        format_material("SaucerHullMat", (0.75, 0.65, 0.92), roughness=0.2, metallic=0.4), # Lilac saucer
-        format_material("CockpitDomeMat", (0.45, 0.95, 0.85), roughness=0.05, metallic=0.0, opacity=0.60, ior=1.45), # Cyan dome
-        format_material("TractorBeamMat", (0.35, 0.98, 0.75), roughness=0.3, metallic=0.0, opacity=0.35, ior=1.0), # Glow beam
-        format_material("HeartGlowMat", (1.0, 0.25, 0.55), roughness=0.1, metallic=0.1, opacity=0.95), # Glowing pink heart
-        format_material("BeaconGoldMat", (1.0, 0.85, 0.3), roughness=0.15, metallic=0.5), # Gold antenna & lights
+    mats = [
+        ("SaucerHullMat", (0.75, 0.65, 0.92), 0.2, 0.4, 1.0, None),
+        ("CockpitDomeMat", (0.45, 0.95, 0.85), 0.05, 0.0, 0.55, None),
+        ("TractorBeamMat", (0.35, 0.98, 0.75), 0.3, 0.0, 0.30, (0.10, 0.45, 0.35)),
+        ("HeartGlowMat", (1.0, 0.25, 0.55), 0.1, 0.1, 1.0, (0.55, 0.05, 0.2)),
+        ("BeaconGoldMat", (1.0, 0.85, 0.3), 0.15, 0.5, 1.0, (0.6, 0.45, 0.1)),
     ]
-
+    materials = [format_material(n, c, r, m, o, 1.5, e) for n, c, r, m, o, e in mats]
+    col = {n: c for n, c, *_ in mats}
     meshes = []
-
-    # 1. Main Saucer Body (flattened wide disc)
-    # Upper rim cylinder / cone
-    hull_pts, hull_idx, hull_cnt, hull_nrm = create_cylinder(radius_top=0.06, radius_bottom=0.18, height=0.035, radial_steps=32, center=(0, 0.08, 0))
-    meshes.append(format_usda_mesh("SaucerUpper", hull_pts, hull_idx, hull_cnt, hull_nrm, "/Root/Materials/SaucerHullMat", (0.75, 0.65, 0.92)))
-
-    # Lower hull cone
-    lh_pts, lh_idx, lh_cnt, lh_nrm = create_cylinder(radius_top=0.18, radius_bottom=0.05, height=0.045, radial_steps=32, center=(0, 0.04, 0))
-    meshes.append(format_usda_mesh("SaucerLower", lh_pts, lh_idx, lh_cnt, lh_nrm, "/Root/Materials/SaucerHullMat", (0.75, 0.65, 0.92)))
-
-    # 2. Cockpit Glass Bubble Dome (UV sphere on top)
-    dome_pts, dome_idx, dome_cnt, dome_nrm = create_uv_sphere(radius=0.07, lat_steps=14, lon_steps=24, center=(0, 0.10, 0))
-    meshes.append(format_usda_mesh("CockpitDome", dome_pts, dome_idx, dome_cnt, dome_nrm, "/Root/Materials/CockpitDomeMat", (0.45, 0.95, 0.85)))
-
-    # 3. Antenna on top of dome
-    ant_pts, ant_idx, ant_cnt, ant_nrm = create_cylinder(radius_top=0.004, radius_bottom=0.005, height=0.04, radial_steps=12, center=(0, 0.18, 0))
-    meshes.append(format_usda_mesh("AntennaMast", ant_pts, ant_idx, ant_cnt, ant_nrm, "/Root/Materials/BeaconGoldMat", (1.0, 0.85, 0.3)))
-
-    tip_pts, tip_idx, tip_cnt, tip_nrm = create_uv_sphere(radius=0.012, lat_steps=10, lon_steps=14, center=(0, 0.20, 0))
-    meshes.append(format_usda_mesh("AntennaTip", tip_pts, tip_idx, tip_cnt, tip_nrm, "/Root/Materials/BeaconGoldMat", (1.0, 0.85, 0.3)))
-
-    # 4. Saucer Rim Beacons (ring of 8 glowing spheres around the rim)
+    saucer = [(0.0, 0.0), (0.05, 0.0), (0.15, 0.04), (0.19, 0.062), (0.15, 0.082), (0.07, 0.095), (0.0, 0.095)]
+    meshes.append(format_mesh("Saucer", lathe(_flat_segments(saucer), 40), "SaucerHullMat", col["SaucerHullMat"]))
+    meshes.append(format_mesh("CockpitDome", dome(0.07, (0, 0.095, 0)), "CockpitDomeMat", col["CockpitDomeMat"], True))
+    meshes.append(format_mesh("AntennaMast", cylinder(0.005, 0.0, 0.04, (0, 0.165, 0), 12), "BeaconGoldMat", col["BeaconGoldMat"]))
+    meshes.append(format_mesh("AntennaTip", sphere(0.012, (0, 0.21, 0), 8, 14), "BeaconGoldMat", col["BeaconGoldMat"]))
     for i in range(8):
-        ang = 2 * math.pi * i / 8
-        bx = 0.17 * math.cos(ang)
-        bz = 0.17 * math.sin(ang)
-        b_pts, b_idx, b_cnt, b_nrm = create_uv_sphere(radius=0.010, lat_steps=8, lon_steps=12, center=(bx, 0.06, bz))
-        meshes.append(format_usda_mesh(f"Beacon_{i}", b_pts, b_idx, b_cnt, b_nrm, "/Root/Materials/BeaconGoldMat", (1.0, 0.85, 0.3)))
-
-    # 5. Downward Glowing Tractor Beam (translucent cone tapering down)
-    beam_pts, beam_idx, beam_cnt, beam_nrm = create_cylinder(radius_top=0.045, radius_bottom=0.13, height=0.20, radial_steps=28, center=(0, -0.08, 0))
-    meshes.append(format_usda_mesh("TractorBeam", beam_pts, beam_idx, beam_cnt, beam_nrm, "/Root/Materials/TractorBeamMat", (0.35, 0.98, 0.75)))
-
-    # 6. Projected Glowing Heart at the base of the beam
-    h_pts, h_idx, h_cnt, h_nrm = create_faceted_heart_mesh(scale=0.085, center=(0, -0.10, 0))
-    meshes.append(format_usda_mesh("ProjectedHeart", h_pts, h_idx, h_cnt, h_nrm, "/Root/Materials/HeartGlowMat", (1.0, 0.25, 0.55)))
-
-    usda = f"""#usda 1.0
-(
-    defaultPrim = "Root"
-    metersPerUnit = 1.0
-    upAxis = "Y"
-)
-
-def Xform "Root" (
-    kind = "component"
-)
-{{
-    def Scope "Materials"
-    {{
-{"".join(materials)}
-    }}
-
-    def Xform "UfoModel"
-    {{
-{"".join(meshes)}
-    }}
-}}
-"""
-    package_usdz(usda, MODELS_DIR / "ufo.usdz")
-    print(f"Generated ufo.usdz ({os.path.getsize(MODELS_DIR / 'ufo.usdz')} bytes)")
+        a = 2 * math.pi * i / 8
+        meshes.append(format_mesh(f"Beacon_{i}", sphere(0.011, (0.19 * math.cos(a), 0.062, 0.19 * math.sin(a)), 6, 10),
+                                  "BeaconGoldMat", col["BeaconGoldMat"]))
+    beam = [(0.0, -0.18), (0.13, -0.18), (0.045, 0.02), (0.0, 0.02)]
+    meshes.append(format_mesh("TractorBeam", lathe(_flat_segments(beam), 32), "TractorBeamMat", col["TractorBeamMat"], True))
+    meshes.append(format_mesh("ProjectedHeart", heart_gem(0.13, 0.035, (0, -0.10, 0)), "HeartGlowMat", col["HeartGlowMat"]))
+    package_usdz(usda_document("UfoModel", materials, meshes), MODELS_DIR / "ufo.usdz")
 
 
 def main():
-    build_iloveyou_model()
-    build_heart_model()
-    build_ufo_model()
-    print("All AR models successfully generated.")
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    for name, fn in (("iloveyou", build_iloveyou_model), ("heart", build_heart_model), ("ufo", build_ufo_model)):
+        fn()
+        print(f"Generated {name}.usdz ({(MODELS_DIR / (name + '.usdz')).stat().st_size} bytes)")
 
 
 if __name__ == "__main__":
