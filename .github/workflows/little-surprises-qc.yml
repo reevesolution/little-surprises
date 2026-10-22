@@ -26,7 +26,7 @@ jobs:
           curl --fail --location --retry 3 --silent --show-error \
             'https://raw.githubusercontent.com/PixarAnimationStudios/OpenUSD/v26.05/pxr/usd/usdUtils/complianceChecker.py' \
             -o /tmp/openusd-checker/complianceChecker.py
-          echo "bed35b2b088f882a82578f41c60e66a3f060313ab57758d4c182f79b8be0d72e  /tmp/openusd-checker/complianceChecker.py" | sha256sum --check --status
+          echo "4830623990e5da74ccf79ba689918de7d6c632ce8b01726540489047abffca43  /tmp/openusd-checker/complianceChecker.py" | sha256sum --check
           test -s /tmp/openusd-checker/complianceChecker.py
           python -c 'from pxr import Usd, Sdr; print("OpenUSD", Usd.GetVersion()); assert Sdr.Registry().GetShaderNodeByIdentifier("UsdPreviewSurface") is not None, "shaderDefs.usda missing"'
       - name: USDZ model regression checks (required, no skips)
