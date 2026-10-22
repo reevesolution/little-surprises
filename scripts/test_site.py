@@ -4,6 +4,12 @@ import os
 import sys
 import re
 
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 def test_site():
     print("Running automated site verification checks...")
     errors = []
@@ -14,7 +20,7 @@ def test_site():
         errors.append("surprises.json manifest missing!")
     else:
         try:
-            with open(manifest_path, "r") as f:
+            with open(manifest_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             manifest = data.get("manifest", [])
             if len(manifest) != 20:
@@ -49,7 +55,7 @@ def test_site():
         errors.append("assets/css/style.css missing!")
 
     # Check USDZ AR models
-    for model in ["iloveyou.usdz", "heart.usdz"]:
+    for model in ["iloveyou.usdz", "heart.usdz", "ufo.usdz"]:
         m_path = f"assets/models/{model}"
         if not os.path.exists(m_path):
             errors.append(f"AR asset missing: {m_path}")
